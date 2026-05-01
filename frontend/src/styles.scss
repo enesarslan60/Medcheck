@@ -1,0 +1,32 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background: #f5f7fa;
+  color: #1f2937;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.severity-SEVERE   { background: #c62828; }
+.severity-MODERATE { background: #ef6c00; }
+.severity-MILD     { background: #2e7d32; }
+.severity-NONE     { background: #607d8b; }

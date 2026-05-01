@@ -1,0 +1,54 @@
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 24px 0 16px;
+}
+
+.interaction-card {
+  margin-bottom: 16px;
+  padding: 8px;
+}
+
+.no-interaction-card {
+  text-align: center;
+  padding: 32px;
+  border-left: 6px solid #2e7d32;
+  background: #e8f5e9;
+
+  .success-icon {
+    color: #2e7d32;
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+  }
+
+  h3 {
+    color: #1b5e20;
+    margin: 12px 0 8px;
+  }
+}
+
+.source-tag {
+  margin-left: 12px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.explanation {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 16px 0;
+}
+
+.technical {
+  color: #4b5563;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+details summary {
+  cursor: pointer;
+  color: #1976d2;
+  font-size: 13px;
+}
