@@ -1,0 +1,41 @@
+<div class="result-header">
+  <h2>Interaction results</h2>
+  <button mat-stroked-button color="primary" (click)="back()">
+    <mat-icon>arrow_back</mat-icon>
+    Check again
+  </button>
+</div>
+
+<mat-card *ngIf="!hasRealInteractions()" class="no-interaction-card">
+  <mat-card-content>
+    <mat-icon class="success-icon">check_circle</mat-icon>
+    <h3>No known interactions found</h3>
+    <p>
+      Based on our local database and OpenFDA, no significant interactions were
+      reported between the selected medications. Always confirm with your doctor
+      or pharmacist.
+    </p>
+  </mat-card-content>
+</mat-card>
+
+<ng-container *ngIf="hasRealInteractions()">
+  <mat-card *ngFor="let result of results" class="interaction-card">
+    <mat-card-header>
+      <mat-card-title>{{ result.drug1 }} + {{ result.drug2 }}</mat-card-title>
+      <mat-card-subtitle>
+        <span class="severity-badge severity-{{ result.severity }}">
+          {{ result.severity }}
+        </span>
+        <span class="source-tag" *ngIf="result.source">· source: {{ result.source }}</span>
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <p class="explanation">{{ result.llmExplanation }}</p>
+      <details *ngIf="result.description">
+        <summary>Technical description</summary>
+        <p class="technical">{{ result.description }}</p>
+      </details>
+    </mat-card-content>
+  </mat-card>
+</ng-container>

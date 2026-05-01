@@ -1,0 +1,63 @@
+<mat-card class="search-card">
+  <mat-card-header>
+    <mat-card-title>Find drug interactions</mat-card-title>
+    <mat-card-subtitle>
+      Search for medications, add at least two, then check how they interact.
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search for a drug</mat-label>
+      <input
+        type="text"
+        matInput
+        [formControl]="searchControl"
+        [matAutocomplete]="auto"
+        placeholder="e.g. Ibuprofen" />
+      <mat-icon matSuffix>search</mat-icon>
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        [displayWith]="displayDrug"
+        (optionSelected)="onSelect($event)">
+        <mat-option *ngFor="let drug of suggestions$ | async" [value]="drug">
+          <strong>{{ drug.name }}</strong>
+          <span class="suggestion-substance"> — {{ drug.activeSubstance }}</span>
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-chip-set aria-label="Selected drugs">
+      <mat-chip
+        *ngFor="let drug of selected"
+        (removed)="remove(drug)">
+        {{ drug.name }}
+        <button matChipRemove [attr.aria-label]="'remove ' + drug.name">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip>
+    </mat-chip-set>
+
+    <p class="hint" *ngIf="!selected.length">
+      No drugs selected yet.
+    </p>
+
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="check()"
+      [disabled]="loading || selected.length < 2">
+      <mat-icon>medical_services</mat-icon>
+      Check Interactions
+    </button>
+    <mat-progress-spinner
+      *ngIf="loading"
+      mode="indeterminate"
+      diameter="24">
+    </mat-progress-spinner>
+  </mat-card-actions>
+</mat-card>
