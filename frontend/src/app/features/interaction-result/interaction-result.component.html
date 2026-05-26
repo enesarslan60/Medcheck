@@ -20,22 +20,32 @@
 
 <ng-container *ngIf="hasRealInteractions()">
   <mat-card *ngFor="let result of results" class="interaction-card">
-    <mat-card-header>
-      <mat-card-title>{{ result.drug1 }} + {{ result.drug2 }}</mat-card-title>
-      <mat-card-subtitle>
-        <span class="severity-badge severity-{{ result.severity }}">
-          {{ result.severity }}
-        </span>
-        <span class="source-tag" *ngIf="result.source">· source: {{ result.source }}</span>
-      </mat-card-subtitle>
-    </mat-card-header>
+    <div class="card-row">
+      <div class="traffic-light" [attr.aria-label]="'severity ' + result.severity">
+        <span class="light red"    [class.on]="result.severity === 'SEVERE'"></span>
+        <span class="light yellow" [class.on]="result.severity === 'MODERATE'"></span>
+        <span class="light green"  [class.on]="result.severity === 'MILD' || result.severity === 'NONE'"></span>
+      </div>
 
-    <mat-card-content>
-      <p class="explanation">{{ result.llmExplanation }}</p>
-      <details *ngIf="result.description">
-        <summary>Technical description</summary>
-        <p class="technical">{{ result.description }}</p>
-      </details>
-    </mat-card-content>
+      <div class="card-body">
+        <mat-card-header>
+          <mat-card-title>{{ result.drug1 }} + {{ result.drug2 }}</mat-card-title>
+          <mat-card-subtitle>
+            <span class="severity-badge severity-{{ result.severity }}">
+              {{ result.severity }}
+            </span>
+            <span class="source-tag" *ngIf="result.source">· source: {{ result.source }}</span>
+          </mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <p class="explanation">{{ result.llmExplanation }}</p>
+          <details *ngIf="result.description">
+            <summary>Technical description</summary>
+            <p class="technical">{{ result.description }}</p>
+          </details>
+        </mat-card-content>
+      </div>
+    </div>
   </mat-card>
 </ng-container>

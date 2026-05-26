@@ -2,44 +2,58 @@
   <mat-card-header>
     <mat-card-title>Find drug interactions</mat-card-title>
     <mat-card-subtitle>
-      Search for medications, add at least two, then check how they interact.
+      Add at least two medications to see how they interact.
     </mat-card-subtitle>
   </mat-card-header>
 
   <mat-card-content>
-    <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Search for a drug</mat-label>
-      <input
-        type="text"
-        matInput
-        [formControl]="searchControl"
-        [matAutocomplete]="auto"
-        placeholder="e.g. Ibuprofen" />
-      <mat-icon matSuffix>search</mat-icon>
-      <mat-autocomplete
-        #auto="matAutocomplete"
-        [displayWith]="displayDrug"
-        (optionSelected)="onSelect($event)">
-        <mat-option *ngFor="let drug of suggestions$ | async" [value]="drug">
-          <strong>{{ drug.name }}</strong>
-          <span class="suggestion-substance"> — {{ drug.activeSubstance }}</span>
-        </mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
+    <div class="slot-list">
+      <div class="slot" *ngFor="let slot of slots; let i = index">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Drug {{ i + 1 }}</mat-label>
+          <input
+            type="text"
+            matInput
+            [formControl]="slot.control"
+            [matAutocomplete]="auto"
+            (input)="onInputChange(slot)"
+            placeholder="e.g. Ibuprofen" />
+          <mat-icon matSuffix *ngIf="!slot.selected">search</mat-icon>
+          <mat-icon
+            matSuffix
+            *ngIf="slot.selected"
+            class="selected-check"
+            aria-label="selected">check_circle</mat-icon>
+          <mat-autocomplete
+            #auto="matAutocomplete"
+            [displayWith]="displayDrug"
+            (optionSelected)="onSelect(slot, $event)">
+            <mat-option *ngFor="let drug of slot.suggestions$ | async" [value]="drug">
+              <strong>{{ drug.name }}</strong>
+              <span class="suggestion-substance"> — {{ drug.activeSubstance }}</span>
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
 
-    <mat-chip-set aria-label="Selected drugs">
-      <mat-chip
-        *ngFor="let drug of selected"
-        (removed)="remove(drug)">
-        {{ drug.name }}
-        <button matChipRemove [attr.aria-label]="'remove ' + drug.name">
-          <mat-icon>cancel</mat-icon>
+        <button
+          mat-icon-button
+          color="warn"
+          class="slot-remove"
+          (click)="removeSlot(i)"
+          [disabled]="slots.length <= 2"
+          [attr.aria-label]="'Remove drug ' + (i + 1)">
+          <mat-icon>delete</mat-icon>
         </button>
-      </mat-chip>
-    </mat-chip-set>
+      </div>
+    </div>
 
-    <p class="hint" *ngIf="!selected.length">
-      No drugs selected yet.
+    <button mat-stroked-button color="primary" (click)="addSlot()" class="add-button">
+      <mat-icon>add</mat-icon>
+      Add drug
+    </button>
+
+    <p class="hint">
+      {{ selectedCount }} of {{ slots.length }} slots filled.
     </p>
 
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
@@ -50,7 +64,7 @@
       mat-flat-button
       color="primary"
       (click)="check()"
-      [disabled]="loading || selected.length < 2">
+      [disabled]="loading || selectedCount < 2">
       <mat-icon>medical_services</mat-icon>
       Check Interactions
     </button>

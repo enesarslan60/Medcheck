@@ -3,9 +3,29 @@
   padding: 16px;
 }
 
-.search-field {
-  width: 100%;
+.slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin-top: 16px;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-field {
+  flex: 1;
+}
+
+.slot-remove {
+  margin-bottom: 18px;
+}
+
+.selected-check {
+  color: #2e7d32;
 }
 
 .suggestion-substance {
@@ -13,17 +33,18 @@
   margin-left: 4px;
 }
 
+.add-button {
+  margin-top: 4px;
+}
+
 .hint {
   color: #6b7280;
   font-size: 14px;
+  margin-top: 12px;
 }
 
 .error {
   color: #c62828;
   font-size: 14px;
-  margin-top: 8px;
-}
-
-mat-chip-set {
   margin-top: 8px;
 }

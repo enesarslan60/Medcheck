@@ -10,6 +10,52 @@
   padding: 8px;
 }
 
+.card-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.card-body {
+  flex: 1;
+}
+
+.traffic-light {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: #1f2937;
+  border-radius: 12px;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+  min-width: 36px;
+}
+
+.traffic-light .light {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #374151;
+  opacity: 0.35;
+  transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.traffic-light .light.red    { background: #c62828; }
+.traffic-light .light.yellow { background: #ef6c00; }
+.traffic-light .light.green  { background: #2e7d32; }
+
+.traffic-light .light.on {
+  opacity: 1;
+  box-shadow:
+    0 0 8px currentColor,
+    0 0 14px rgba(255, 255, 255, 0.15);
+}
+
+.traffic-light .light.red.on    { color: #ff5252; }
+.traffic-light .light.yellow.on { color: #ffb74d; }
+.traffic-light .light.green.on  { color: #66bb6a; }
+
 .no-interaction-card {
   text-align: center;
   padding: 32px;
