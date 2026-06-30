@@ -1,6 +1,7 @@
 package com.drugchecker.service;
 
 import com.drugchecker.dto.DrugDTO;
+import com.drugchecker.exception.ResourceNotFoundException;
 import com.drugchecker.model.Drug;
 import com.drugchecker.repository.DrugRepository;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,12 @@ public class DrugService {
         return drugRepository.findAll().stream()
                 .map(DrugDTO::fromEntity)
                 .toList();
+    }
+
+    public DrugDTO findById(Long id) {
+        return drugRepository.findById(id)
+                .map(DrugDTO::fromEntity)
+                .orElseThrow(() -> new ResourceNotFoundException("Drug not found: id=" + id));
     }
 
     public List<DrugDTO> searchByName(String query) {
