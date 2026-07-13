@@ -3,9 +3,8 @@ package com.drugchecker.controller;
 import com.drugchecker.dto.InteractionCheckRequest;
 import com.drugchecker.dto.InteractionDTO;
 import com.drugchecker.service.InteractionService;
-import jakarta.validation.Valid;
+import com.drugchecker.validation.DrugValidator;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,17 +14,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/interactions")
-@Validated
 public class InteractionEndpoint {
 
     private final InteractionService interactionService;
+    private final DrugValidator validator;
 
-    public InteractionEndpoint(InteractionService interactionService) {
+    public InteractionEndpoint(InteractionService interactionService, DrugValidator validator) {
         this.interactionService = interactionService;
+        this.validator = validator;
     }
 
     @PostMapping("/check")
-    public ResponseEntity<List<InteractionDTO>> check(@Valid @RequestBody InteractionCheckRequest request) {
+    public ResponseEntity<List<InteractionDTO>> check(@RequestBody InteractionCheckRequest request) {
+        validator.validateDrugNameList(request.getDrugNames());
         List<InteractionDTO> results = interactionService.checkInteractions(request.getDrugNames());
         return ResponseEntity.ok(results);
     }
