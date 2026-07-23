@@ -7,47 +7,50 @@
   <div class="panel-body">
     <div class="slot-list">
       <div class="slot" *ngFor="let slot of slots; let i = index">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Drug {{ i + 1 }}</mat-label>
-          <input
-            type="text"
-            matInput
-            [formControl]="slot.control"
-            [matAutocomplete]="auto"
-            (input)="onInputChange(slot)"
-            placeholder="e.g. Ibuprofen" />
-          <mat-icon matSuffix *ngIf="!slot.selected">search</mat-icon>
-          <mat-icon
-            matSuffix
-            *ngIf="slot.selected"
-            class="selected-check"
-            aria-label="selected">check_circle</mat-icon>
-          <mat-autocomplete
-            #auto="matAutocomplete"
-            [displayWith]="displayDrug"
-            (optionSelected)="onSelect(slot, $event)">
-            <mat-option *ngFor="let drug of slot.suggestions$ | async" [value]="drug">
-              <strong>{{ drug.name }}</strong>
-              <span class="suggestion-substance"> — {{ drug.activeSubstance }}</span>
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
+        <label class="slot-field">
+          <span class="slot-label">Drug {{ i + 1 }}</span>
+
+          <div class="input-wrap">
+            <input
+              type="text"
+              class="text-input"
+              autocomplete="off"
+              [formControl]="slot.control"
+              (focus)="onFocus(slot)"
+              (blur)="onBlur(slot)"
+              (input)="onInputChange(slot)"
+              (keydown)="onKeydown(slot, $event)"
+              placeholder="e.g. Ibuprofen" />
+
+            <span class="input-icon" *ngIf="slot.selected" aria-label="selected">✓</span>
+
+            <ul class="suggestions" *ngIf="slot.open && slot.suggestions.length">
+              <li
+                *ngFor="let drug of slot.suggestions; let idx = index"
+                [class.active]="idx === slot.activeIndex"
+                (mousedown)="selectDrug(slot, drug)">
+                <strong>{{ drug.name }}</strong>
+                <span class="suggestion-substance"> — {{ drug.activeSubstance }}</span>
+              </li>
+            </ul>
+          </div>
+        </label>
 
         <button
-          mat-icon-button
-          color="warn"
-          class="slot-remove"
+          type="button"
+          class="btn-icon"
           (click)="removeSlot(i)"
           [disabled]="slots.length <= 2"
           [attr.aria-label]="'Remove drug ' + (i + 1)">
-          <mat-icon>delete</mat-icon>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="currentColor" d="M6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7zm3-3h6l1 2h4v2H5V6h4l1-2z"/>
+          </svg>
         </button>
       </div>
     </div>
 
-    <button mat-stroked-button color="primary" (click)="addSlot()" class="add-button">
-      <mat-icon>add</mat-icon>
-      Add drug
+    <button type="button" class="btn-outline add-button" (click)="addSlot()">
+      + Add drug
     </button>
 
     <p class="hint">{{ selectedCount }} of {{ slots.length }} slots filled.</p>
@@ -56,18 +59,13 @@
   </div>
 
   <footer class="panel-footer">
+    <span class="spinner" *ngIf="loading" aria-label="loading"></span>
     <button
-      mat-flat-button
-      color="primary"
+      type="button"
+      class="btn-primary"
       (click)="check()"
       [disabled]="loading || selectedCount < 2">
-      <mat-icon>medical_services</mat-icon>
       Check Interactions
     </button>
-    <mat-progress-spinner
-      *ngIf="loading"
-      mode="indeterminate"
-      diameter="24">
-    </mat-progress-spinner>
   </footer>
 </section>

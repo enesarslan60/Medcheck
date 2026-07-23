@@ -5,13 +5,6 @@ import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { debounceTime, switchMap, catchError, startWith } from 'rxjs/operators';
 
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
 import { DrugService } from '../../core/services/drug.service';
 import { InteractionService } from '../../core/services/interaction.service';
 import { Drug } from '../../shared/models/drug.model';
@@ -19,22 +12,16 @@ import { Drug } from '../../shared/models/drug.model';
 interface DrugSlot {
   control: FormControl<string>;
   selected: Drug | null;
+  suggestions: Drug[];
   suggestions$: Observable<Drug[]>;
+  open: boolean;
+  activeIndex: number;
 }
 
 @Component({
   selector: 'app-drug-search',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatAutocompleteModule,
-    MatIconModule,
-    MatButtonModule,
-    MatProgressSpinnerModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './drug-search.component.html',
   styleUrls: ['./drug-search.component.scss']
 })
@@ -59,36 +46,66 @@ export class DrugSearchComponent implements OnInit {
     const slot: DrugSlot = {
       control,
       selected: null,
+      suggestions: [],
+      open: false,
+      activeIndex: -1,
       suggestions$: control.valueChanges.pipe(
         startWith(''),
         debounceTime(250),
         switchMap((value) => {
-          const query = (typeof value === 'string' ? value : '').trim();
-          if (!query) {
+          const query = (value ?? '').trim();
+          if (!query || (slot.selected && value === slot.selected.name)) {
             return of<Drug[]>([]);
           }
           return this.drugService.search(query).pipe(catchError(() => of<Drug[]>([])));
         })
       )
     };
+    slot.suggestions$.subscribe((list) => {
+      slot.suggestions = list;
+      slot.activeIndex = list.length ? 0 : -1;
+      slot.open = list.length > 0;
+    });
     return slot;
   }
 
-  displayDrug(drug: Drug | string | null): string {
-    if (!drug) return '';
-    return typeof drug === 'string' ? drug : drug.name;
+  onFocus(slot: DrugSlot): void {
+    if (slot.suggestions.length) slot.open = true;
   }
 
-  onSelect(slot: DrugSlot, event: MatAutocompleteSelectedEvent): void {
-    const drug = event.option.value as Drug;
-    slot.selected = drug;
+  onBlur(slot: DrugSlot): void {
+    setTimeout(() => (slot.open = false), 120);
   }
 
   onInputChange(slot: DrugSlot): void {
-    const value = slot.control.value;
-    if (typeof value === 'string' && slot.selected && value !== slot.selected.name) {
+    if (slot.selected && slot.control.value !== slot.selected.name) {
       slot.selected = null;
     }
+  }
+
+  onKeydown(slot: DrugSlot, event: KeyboardEvent): void {
+    if (!slot.open || !slot.suggestions.length) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      slot.activeIndex = (slot.activeIndex + 1) % slot.suggestions.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      slot.activeIndex =
+        (slot.activeIndex - 1 + slot.suggestions.length) % slot.suggestions.length;
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const drug = slot.suggestions[slot.activeIndex];
+      if (drug) this.selectDrug(slot, drug);
+    } else if (event.key === 'Escape') {
+      slot.open = false;
+    }
+  }
+
+  selectDrug(slot: DrugSlot, drug: Drug): void {
+    slot.selected = drug;
+    slot.control.setValue(drug.name, { emitEvent: false });
+    slot.open = false;
+    slot.suggestions = [];
   }
 
   addSlot(): void {
@@ -96,15 +113,8 @@ export class DrugSearchComponent implements OnInit {
   }
 
   removeSlot(index: number): void {
-    if (this.slots.length <= 2) {
-      return;
-    }
+    if (this.slots.length <= 2) return;
     this.slots.splice(index, 1);
-  }
-
-  clearSlot(slot: DrugSlot): void {
-    slot.selected = null;
-    slot.control.setValue('');
   }
 
   get selectedCount(): number {

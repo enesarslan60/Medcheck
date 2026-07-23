@@ -2,16 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-
 import { InteractionService } from '../../core/services/interaction.service';
 import { Interaction } from '../../shared/models/interaction.model';
 
 @Component({
   selector: 'app-interaction-result',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './interaction-result.component.html',
   styleUrls: ['./interaction-result.component.scss']
 })
