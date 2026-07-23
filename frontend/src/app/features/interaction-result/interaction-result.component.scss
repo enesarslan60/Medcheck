@@ -3,21 +3,27 @@
   justify-content: space-between;
   align-items: center;
   margin: 24px 0 16px;
+
+  h2 { margin: 0; font-size: 20px; font-weight: 500; }
 }
 
-.interaction-card {
-  margin-bottom: 16px;
-  padding: 8px;
-}
-
-.card-row {
+.interaction-panel {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.card-body {
-  flex: 1;
+.panel-body { flex: 1; }
+
+.panel-heading {
+  h3 { margin: 0 0 4px; font-size: 17px; font-weight: 500; }
+  .meta { font-size: 12px; color: #6b7280; }
 }
 
 .traffic-light {
@@ -30,35 +36,29 @@
   border-radius: 12px;
   box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
   min-width: 36px;
+
+  .light {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #374151;
+    opacity: 0.35;
+    transition: opacity 0.2s, box-shadow 0.2s;
+  }
+  .light.red    { background: #c62828; }
+  .light.yellow { background: #ef6c00; }
+  .light.green  { background: #2e7d32; }
+
+  .light.on { opacity: 1; box-shadow: 0 0 8px currentColor; }
+  .light.red.on    { color: #ff5252; }
+  .light.yellow.on { color: #ffb74d; }
+  .light.green.on  { color: #66bb6a; }
 }
 
-.traffic-light .light {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #374151;
-  opacity: 0.35;
-  transition: opacity 0.2s, box-shadow 0.2s;
-}
-
-.traffic-light .light.red    { background: #c62828; }
-.traffic-light .light.yellow { background: #ef6c00; }
-.traffic-light .light.green  { background: #2e7d32; }
-
-.traffic-light .light.on {
-  opacity: 1;
-  box-shadow:
-    0 0 8px currentColor,
-    0 0 14px rgba(255, 255, 255, 0.15);
-}
-
-.traffic-light .light.red.on    { color: #ff5252; }
-.traffic-light .light.yellow.on { color: #ffb74d; }
-.traffic-light .light.green.on  { color: #66bb6a; }
-
-.no-interaction-card {
+.no-interaction-panel {
   text-align: center;
   padding: 32px;
+  border-radius: 12px;
   border-left: 6px solid #2e7d32;
   background: #e8f5e9;
 
@@ -69,22 +69,15 @@
     width: 48px;
   }
 
-  h3 {
-    color: #1b5e20;
-    margin: 12px 0 8px;
-  }
+  h3 { color: #1b5e20; margin: 12px 0 8px; }
 }
 
-.source-tag {
-  margin-left: 12px;
-  color: #6b7280;
-  font-size: 12px;
-}
+.source-tag { margin-left: 8px; color: #6b7280; font-size: 12px; }
 
 .explanation {
   font-size: 15px;
   line-height: 1.5;
-  margin: 16px 0;
+  margin: 12px 0;
 }
 
 .technical {

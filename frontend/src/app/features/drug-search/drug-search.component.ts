@@ -11,7 +11,6 @@ import { MatAutocompleteModule, MatAutocompleteSelectedEvent } from '@angular/ma
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatCardModule } from '@angular/material/card';
 
 import { DrugService } from '../../core/services/drug.service';
 import { InteractionService } from '../../core/services/interaction.service';
@@ -34,8 +33,7 @@ interface DrugSlot {
     MatAutocompleteModule,
     MatIconModule,
     MatButtonModule,
-    MatProgressSpinnerModule,
-    MatCardModule
+    MatProgressSpinnerModule
   ],
   templateUrl: './drug-search.component.html',
   styleUrls: ['./drug-search.component.scss']

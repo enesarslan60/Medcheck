@@ -1,12 +1,10 @@
-<mat-card class="search-card">
-  <mat-card-header>
-    <mat-card-title>Find drug interactions</mat-card-title>
-    <mat-card-subtitle>
-      Add at least two medications to see how they interact.
-    </mat-card-subtitle>
-  </mat-card-header>
+<section class="panel">
+  <header class="panel-header">
+    <h2>Find drug interactions</h2>
+    <p>Add at least two medications to see how they interact.</p>
+  </header>
 
-  <mat-card-content>
+  <div class="panel-body">
     <div class="slot-list">
       <div class="slot" *ngFor="let slot of slots; let i = index">
         <mat-form-field appearance="outline" class="search-field">
@@ -52,14 +50,12 @@
       Add drug
     </button>
 
-    <p class="hint">
-      {{ selectedCount }} of {{ slots.length }} slots filled.
-    </p>
+    <p class="hint">{{ selectedCount }} of {{ slots.length }} slots filled.</p>
 
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  </mat-card-content>
+  </div>
 
-  <mat-card-actions align="end">
+  <footer class="panel-footer">
     <button
       mat-flat-button
       color="primary"
@@ -73,5 +69,5 @@
       mode="indeterminate"
       diameter="24">
     </mat-progress-spinner>
-  </mat-card-actions>
-</mat-card>
+  </footer>
+</section>
