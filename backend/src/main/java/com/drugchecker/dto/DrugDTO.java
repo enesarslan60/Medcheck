@@ -1,13 +1,7 @@
 package com.drugchecker.dto;
 
 import com.drugchecker.model.Drug;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class DrugDTO {
 
     private Long id;
@@ -15,6 +9,17 @@ public class DrugDTO {
     private String activeSubstance;
     private String description;
     private String sideEffects;
+
+    public DrugDTO() {
+    }
+
+    public DrugDTO(Long id, String name, String activeSubstance, String description, String sideEffects) {
+        this.id = id;
+        this.name = name;
+        this.activeSubstance = activeSubstance;
+        this.description = description;
+        this.sideEffects = sideEffects;
+    }
 
     public static DrugDTO fromEntity(Drug drug) {
         return new DrugDTO(
@@ -24,5 +29,45 @@ public class DrugDTO {
                 drug.getDescription(),
                 drug.getSideEffects()
         );
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getActiveSubstance() {
+        return activeSubstance;
+    }
+
+    public void setActiveSubstance(String activeSubstance) {
+        this.activeSubstance = activeSubstance;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSideEffects() {
+        return sideEffects;
+    }
+
+    public void setSideEffects(String sideEffects) {
+        this.sideEffects = sideEffects;
     }
 }

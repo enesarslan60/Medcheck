@@ -1,11 +1,23 @@
 package com.drugchecker.dto;
 
-import lombok.Data;
-
 import java.util.List;
 
-@Data
 public class InteractionCheckRequest {
 
     private List<String> drugNames;
+
+    public InteractionCheckRequest() {
+    }
+
+    public InteractionCheckRequest(List<String> drugNames) {
+        this.drugNames = drugNames;
+    }
+
+    public List<String> getDrugNames() {
+        return drugNames;
+    }
+
+    public void setDrugNames(List<String> drugNames) {
+        this.drugNames = drugNames;
+    }
 }
