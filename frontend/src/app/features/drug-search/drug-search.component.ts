@@ -7,13 +7,13 @@ import { debounceTime, switchMap, catchError, startWith } from 'rxjs/operators';
 
 import { DrugService } from '../../core/services/drug.service';
 import { InteractionService } from '../../core/services/interaction.service';
-import { Drug } from '../../shared/models/drug.model';
+import { RxNormCandidate } from '../../shared/models/rxnorm.model';
 
 interface DrugSlot {
   control: FormControl<string>;
-  selected: Drug | null;
-  suggestions: Drug[];
-  suggestions$: Observable<Drug[]>;
+  selected: RxNormCandidate | null;
+  suggestions: RxNormCandidate[];
+  suggestions$: Observable<RxNormCandidate[]>;
   open: boolean;
   activeIndex: number;
 }
@@ -55,9 +55,9 @@ export class DrugSearchComponent implements OnInit {
         switchMap((value) => {
           const query = (value ?? '').trim();
           if (!query || (slot.selected && value === slot.selected.name)) {
-            return of<Drug[]>([]);
+            return of<RxNormCandidate[]>([]);
           }
-          return this.drugService.search(query).pipe(catchError(() => of<Drug[]>([])));
+          return this.drugService.search(query).pipe(catchError(() => of<RxNormCandidate[]>([])));
         })
       )
     };
@@ -101,7 +101,7 @@ export class DrugSearchComponent implements OnInit {
     }
   }
 
-  selectDrug(slot: DrugSlot, drug: Drug): void {
+  selectDrug(slot: DrugSlot, drug: RxNormCandidate): void {
     slot.selected = drug;
     slot.control.setValue(drug.name, { emitEvent: false });
     slot.open = false;

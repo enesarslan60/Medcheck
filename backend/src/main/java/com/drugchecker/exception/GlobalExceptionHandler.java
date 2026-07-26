@@ -70,6 +70,20 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_GATEWAY, ex.getMessage(), req, null);
     }
 
+    @ExceptionHandler(RxNormApiException.class)
+    public ResponseEntity<ApiError> handleRxNorm(RxNormApiException ex, HttpServletRequest req) {
+        log.warn("RxNorm upstream failure: {}", ex.getMessage());
+        return build(HttpStatus.BAD_GATEWAY,
+                "RxNorm service is currently unavailable.", req, null);
+    }
+
+    @ExceptionHandler(OpenFdaApiException.class)
+    public ResponseEntity<ApiError> handleOpenFda(OpenFdaApiException ex, HttpServletRequest req) {
+        log.warn("openFDA upstream failure: {}", ex.getMessage());
+        return build(HttpStatus.BAD_GATEWAY,
+                "openFDA service is currently unavailable.", req, null);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex, HttpServletRequest req) {
         log.error("Unhandled exception", ex);

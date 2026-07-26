@@ -7,10 +7,7 @@
   h2 { font-size: 20px; }
 }
 
-.interaction-panel {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
+.drug-panel {
   padding: 16px;
   margin-bottom: 16px;
   background: #fff;
@@ -19,81 +16,54 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.panel-body { flex: 1; }
-
 .panel-heading {
   h3 { font-size: 17px; margin-bottom: 4px; }
   .meta { font-size: 12px; color: #6b7280; }
 }
 
-.traffic-light {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 8px;
-  background: #1f2937;
-  border-radius: 12px;
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
-  min-width: 36px;
+.source-tag { margin-left: 8px; color: #6b7280; font-size: 12px; }
 
-  .light {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #374151;
-    opacity: 0.35;
-    transition: opacity 0.2s, box-shadow 0.2s;
-  }
-  .light.red    { background: #c62828; }
-  .light.yellow { background: #ef6c00; }
-  .light.green  { background: #2e7d32; }
-
-  .light.on { opacity: 1; box-shadow: 0 0 8px currentColor; }
-  .light.red.on    { color: #ff5252; }
-  .light.yellow.on { color: #ffb74d; }
-  .light.green.on  { color: #66bb6a; }
-}
-
-.no-interaction-panel {
+.no-data-panel {
   text-align: center;
   padding: 32px;
   border-radius: 12px;
-  border-left: 6px solid #2e7d32;
-  background: #e8f5e9;
+  border-left: 6px solid #1976d2;
+  background: #e3f2fd;
 
-  .success-icon {
+  .info-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: #2e7d32;
+    background: #1976d2;
     color: #fff;
-    font-size: 30px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 28px;
     font-weight: 700;
   }
 
-  h3 { color: #1b5e20; margin: 12px 0 8px; }
+  h3 { color: #0d47a1; margin: 12px 0 8px; }
 }
 
-.source-tag { margin-left: 8px; color: #6b7280; font-size: 12px; }
-
-.explanation {
-  font-size: 15px;
-  line-height: 1.5;
+.empty {
+  color: #6b7280;
+  font-style: italic;
   margin: 12px 0;
 }
 
-.technical {
-  color: #4b5563;
+.interaction-text {
   font-size: 13px;
+  line-height: 1.5;
+  color: #374151;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 12px 0 0;
   white-space: pre-wrap;
-}
-
-details summary {
-  cursor: pointer;
-  color: #1976d2;
-  font-size: 13px;
+  overflow-x: auto;
+  font-family: inherit;
 }

@@ -1,7 +1,7 @@
 package com.drugchecker.controller;
 
+import com.drugchecker.dto.DrugInteractionData;
 import com.drugchecker.dto.InteractionCheckRequest;
-import com.drugchecker.dto.InteractionDTO;
 import com.drugchecker.service.InteractionService;
 import com.drugchecker.validation.DrugValidator;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +24,14 @@ public class InteractionEndpoint {
         this.validator = validator;
     }
 
+    /**
+     * Returns one entry per requested drug with its openFDA drug_interactions
+     * text (from RxNorm-resolved cache or a fresh openFDA fetch).
+     * The LLM per-pair analysis is not part of this endpoint.
+     */
     @PostMapping("/check")
-    public ResponseEntity<List<InteractionDTO>> check(@RequestBody InteractionCheckRequest request) {
+    public ResponseEntity<List<DrugInteractionData>> check(@RequestBody InteractionCheckRequest request) {
         validator.validateDrugNameList(request.getDrugNames());
-        List<InteractionDTO> results = interactionService.checkInteractions(request.getDrugNames());
-        return ResponseEntity.ok(results);
+        return ResponseEntity.ok(interactionService.checkInteractions(request.getDrugNames()));
     }
 }

@@ -1,110 +1,105 @@
 package com.drugchecker.service;
 
+import com.drugchecker.dto.openfda.OpenFdaLabelResponse;
+import com.drugchecker.dto.openfda.OpenFdaLabelResult;
+import com.drugchecker.exception.OpenFdaApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
+/**
+ * openFDA drug/label lookup — fetches the "drug_interactions" (section 7) free text.
+ * Primary search key is {@code openfda.rxcui}; falls back to {@code openfda.generic_name}.
+ */
 @Service
 public class OpenFDAService {
 
     private static final Logger log = LoggerFactory.getLogger(OpenFDAService.class);
-    private static final String BASE_URL = "https://api.fda.gov/drug/label.json";
 
-    private final RestTemplate restTemplate;
+    private final WebClient openFdaWebClient;
+    private final String apiKey;
 
-    public OpenFDAService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public OpenFDAService(@Qualifier("openFdaWebClient") WebClient openFdaWebClient,
+                          @Value("${openfda.api-key:}") String apiKey) {
+        this.openFdaWebClient = openFdaWebClient;
+        this.apiKey = apiKey;
     }
 
-    public String searchInteractions(String substance1, String substance2) {
-        if (substance1 == null || substance2 == null) {
-            return null;
+    /**
+     * Look up the drug_interactions text for the given identifier.
+     * The identifier is tried as an RxCUI first, then as a generic name.
+     *
+     * @return the interaction text if any label was found, otherwise {@link Optional#empty()}
+     */
+    public Optional<String> getDrugInteractionText(String rxcuiOrGeneric) {
+        if (rxcuiOrGeneric == null || rxcuiOrGeneric.isBlank()) {
+            return Optional.empty();
         }
+        String value = rxcuiOrGeneric.trim();
+
+        Optional<String> byRxcui = queryLabel("openfda.rxcui:" + value);
+        if (byRxcui.isPresent()) {
+            return byRxcui;
+        }
+        return queryLabel("openfda.generic_name:\"" + value + "\"");
+    }
+
+    private Optional<String> queryLabel(String searchExpression) {
+        OpenFdaLabelResponse response;
         try {
-            String query = "drug_interactions:" + substance1 + "+AND+" + substance2;
-            URI uri = UriComponentsBuilder.fromUriString(BASE_URL)
-                    .queryParam("search", query)
-                    .queryParam("limit", 1)
-                    .build()
-                    .toUri();
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.getForObject(uri, Map.class);
-            if (response == null) {
-                return null;
+            response = openFdaWebClient.get()
+                    .uri(buildUri(searchExpression))
+                    .retrieve()
+                    .bodyToMono(OpenFdaLabelResponse.class)
+                    .block();
+        } catch (WebClientResponseException ex) {
+            if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+                // openFDA returns 404 when there is no match — treat as empty
+                return Optional.empty();
             }
-            Object results = response.get("results");
-            if (results instanceof List<?> list && !list.isEmpty()) {
-                Object first = list.get(0);
-                if (first instanceof Map<?, ?> entry) {
-                    Object interactions = entry.get("drug_interactions");
-                    if (interactions instanceof List<?> il && !il.isEmpty()) {
-                        return il.get(0).toString();
-                    }
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            log.warn("OpenFDA interaction lookup failed for {} + {}: {}",
-                    substance1, substance2, e.getMessage());
-            return null;
+            log.warn("openFDA returned {} for search '{}'", ex.getStatusCode(), searchExpression);
+            throw new OpenFdaApiException(
+                    "openFDA request failed: " + ex.getStatusCode(), ex);
+        } catch (RuntimeException ex) {
+            throw new OpenFdaApiException("openFDA request failed", ex);
         }
+
+        return extractInteractionText(response);
     }
 
-    public Map<String, Object> searchDrugInfo(String substanceName) {
-        Map<String, Object> result = new HashMap<>();
-        if (substanceName == null || substanceName.isBlank()) {
-            return result;
-        }
-        try {
-            String query = "openfda.substance_name:" + substanceName;
-            URI uri = UriComponentsBuilder.fromUriString(BASE_URL)
-                    .queryParam("search", query)
-                    .queryParam("limit", 1)
-                    .build()
-                    .toUri();
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.getForObject(uri, Map.class);
-            if (response == null) {
-                return result;
+    private Function<UriBuilder, URI> buildUri(String searchExpression) {
+        return uri -> {
+            UriBuilder b = uri.path("/drug/label.json")
+                    .queryParam("search", searchExpression)
+                    .queryParam("limit", 1);
+            if (apiKey != null && !apiKey.isBlank()) {
+                b = b.queryParam("api_key", apiKey);
             }
-            Object results = response.get("results");
-            if (results instanceof List<?> list && !list.isEmpty()
-                    && list.get(0) instanceof Map<?, ?> entry) {
+            return b.build();
+        };
+    }
 
-                result.put("brandName", firstOrNull(nestedList(entry, "openfda", "brand_name")));
-                result.put("description", firstOrNull(asList(entry.get("description"))));
-                result.put("warnings", firstOrNull(asList(entry.get("warnings"))));
-                result.put("adverseReactions", firstOrNull(asList(entry.get("adverse_reactions"))));
-            }
-            return result;
-        } catch (Exception e) {
-            log.warn("OpenFDA drug info lookup failed for {}: {}", substanceName, e.getMessage());
-            return result;
+    private Optional<String> extractInteractionText(OpenFdaLabelResponse response) {
+        if (response == null || response.results() == null || response.results().isEmpty()) {
+            return Optional.empty();
         }
-    }
-
-    private List<?> asList(Object o) {
-        return o instanceof List<?> l ? l : List.of();
-    }
-
-    private List<?> nestedList(Map<?, ?> entry, String outer, String inner) {
-        Object o = entry.get(outer);
-        if (o instanceof Map<?, ?> m) {
-            return asList(m.get(inner));
+        OpenFdaLabelResult first = response.results().get(0);
+        List<String> interactions = first.drug_interactions();
+        if (interactions == null || interactions.isEmpty()) {
+            return Optional.empty();
         }
-        return List.of();
-    }
-
-    private String firstOrNull(List<?> list) {
-        return list.isEmpty() ? null : String.valueOf(list.get(0));
+        String joined = String.join("\n\n", interactions).trim();
+        return joined.isEmpty() ? Optional.empty() : Optional.of(joined);
     }
 }

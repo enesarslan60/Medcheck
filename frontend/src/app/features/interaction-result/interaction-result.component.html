@@ -1,41 +1,30 @@
 <div class="result-header">
-  <h2>Interaction results</h2>
+  <h2>Interaction data</h2>
   <button type="button" class="btn-outline" (click)="back()">← Check again</button>
 </div>
 
-<div *ngIf="!hasRealInteractions()" class="no-interaction-panel">
-  <div class="success-icon">✓</div>
-  <h3>No known interactions found</h3>
+<div *ngIf="!hasAnyData()" class="no-data-panel">
+  <div class="info-icon">i</div>
+  <h3>No openFDA interaction data available</h3>
   <p>
-    Based on our local database and OpenFDA, no significant interactions were
-    reported between the selected medications. Always confirm with your doctor
-    or pharmacist.
+    None of the selected drugs returned a drug_interactions section from
+    openFDA. Always confirm with your doctor or pharmacist.
   </p>
 </div>
 
-<ng-container *ngIf="hasRealInteractions()">
-  <article *ngFor="let result of results" class="interaction-panel">
-    <div class="traffic-light" [attr.aria-label]="'severity ' + result.severity">
-      <span class="light red"    [class.on]="result.severity === 'SEVERE'"></span>
-      <span class="light yellow" [class.on]="result.severity === 'MODERATE'"></span>
-      <span class="light green"  [class.on]="result.severity === 'MILD' || result.severity === 'NONE'"></span>
-    </div>
+<ng-container *ngIf="hasAnyData()">
+  <article *ngFor="let result of results" class="drug-panel">
+    <header class="panel-heading">
+      <h3>{{ result.drugName }}</h3>
+      <div class="meta">
+        <span *ngIf="result.rxcui">RxCUI {{ result.rxcui }}</span>
+        <span class="source-tag">· source: {{ result.source }}</span>
+      </div>
+    </header>
 
-    <div class="panel-body">
-      <header class="panel-heading">
-        <h3>{{ result.drug1 }} + {{ result.drug2 }}</h3>
-        <div class="meta">
-          <span class="severity-badge severity-{{ result.severity }}">{{ result.severity }}</span>
-          <span class="source-tag" *ngIf="result.source">· source: {{ result.source }}</span>
-        </div>
-      </header>
-
-      <p class="explanation">{{ result.llmExplanation }}</p>
-
-      <details *ngIf="result.description">
-        <summary>Technical description</summary>
-        <p class="technical">{{ result.description }}</p>
-      </details>
-    </div>
+    <p *ngIf="!result.interactionText" class="empty">
+      No openFDA drug_interactions text was found for this drug.
+    </p>
+    <pre *ngIf="result.interactionText" class="interaction-text">{{ result.interactionText }}</pre>
   </article>
 </ng-container>

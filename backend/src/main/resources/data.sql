@@ -1,4 +1,7 @@
--- Sample data for testing. Real interactions are fetched live from OpenFDA.
+-- Local-development and unit-test data only.
+-- Real drug lookups go through RxNorm (autocomplete) and openFDA
+-- (drug_interactions text) at runtime. The drug_interaction_texts cache
+-- table is populated on demand by InteractionService, not seeded here.
 
 INSERT INTO drugs (name, active_substance, description, side_effects) VALUES
 ('Advil', 'Ibuprofen', 'Nonsteroidal anti-inflammatory drug used for pain and fever.', 'Stomach upset, heartburn, dizziness, mild rash.'),
@@ -11,20 +14,3 @@ INSERT INTO drugs (name, active_substance, description, side_effects) VALUES
 ('Prilosec', 'Omeprazole', 'Proton pump inhibitor used to reduce stomach acid.', 'Headache, nausea, vitamin B12 deficiency long-term.'),
 ('Zoloft', 'Sertraline', 'SSRI antidepressant used for depression and anxiety.', 'Insomnia, nausea, sexual dysfunction.'),
 ('Amoxil', 'Amoxicillin', 'Penicillin antibiotic used for bacterial infections.', 'Rash, diarrhea, allergic reactions.');
-
-INSERT INTO interactions (drug1, drug2, severity, description, llm_explanation) VALUES
-('Warfarin', 'Aspirin', 'SEVERE',
- 'Concurrent use significantly increases the risk of major bleeding due to combined anticoagulant and antiplatelet effects.',
- 'Taking Warfarin and Aspirin together greatly increases your risk of bleeding, including dangerous internal bleeding. This combination should only be used under close medical supervision.'),
-('Ibuprofen', 'Ramipril', 'MODERATE',
- 'NSAIDs may reduce the antihypertensive effect of ACE inhibitors and increase risk of renal impairment.',
- 'Ibuprofen can make Ramipril less effective at controlling your blood pressure and may strain your kidneys. Use the lowest effective dose for the shortest time, and tell your doctor.'),
-('Ibuprofen', 'Aspirin', 'MODERATE',
- 'Ibuprofen may interfere with the antiplatelet effect of low-dose aspirin and increases GI bleeding risk.',
- 'Combining Ibuprofen and Aspirin can reduce Aspirin''s heart-protective benefit and raise the risk of stomach bleeding. Speak to your doctor before taking them together regularly.'),
-('Metformin', 'Atorvastatin', 'MILD',
- 'No clinically significant interaction; both may be used together for diabetic patients with dyslipidemia.',
- 'Metformin and Atorvastatin are commonly prescribed together. There is no significant interaction, but always follow your doctor''s instructions.'),
-('Paracetamol', 'Amoxicillin', 'MILD',
- 'No clinically significant interaction reported.',
- 'Paracetamol and Amoxicillin can usually be taken together safely. Follow the dosing instructions on each medication.');

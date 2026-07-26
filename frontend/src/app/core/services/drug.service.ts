@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Drug } from '../../shared/models/drug.model';
+import { RxNormCandidate } from '../../shared/models/rxnorm.model';
 
 @Injectable({ providedIn: 'root' })
 export class DrugService {
@@ -10,17 +11,14 @@ export class DrugService {
 
   constructor(private http: HttpClient) {}
 
+  /** Local dev/test drugs from H2. */
   getAll(): Observable<Drug[]> {
     return this.http.get<Drug[]>(this.baseUrl);
   }
 
-  search(name: string): Observable<Drug[]> {
+  /** Autocomplete: fuzzy RxNorm lookup. */
+  search(name: string): Observable<RxNormCandidate[]> {
     const params = new HttpParams().set('name', name);
-    return this.http.get<Drug[]>(`${this.baseUrl}/search`, { params });
-  }
-
-  openFda(name: string): Observable<Record<string, unknown>> {
-    const params = new HttpParams().set('name', name);
-    return this.http.get<Record<string, unknown>>(`${this.baseUrl}/openfda`, { params });
+    return this.http.get<RxNormCandidate[]>(`${this.baseUrl}/search`, { params });
   }
 }

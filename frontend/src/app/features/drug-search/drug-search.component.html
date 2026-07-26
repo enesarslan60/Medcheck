@@ -30,7 +30,7 @@
                 [class.active]="idx === slot.activeIndex"
                 (mousedown)="selectDrug(slot, drug)">
                 <strong>{{ drug.name }}</strong>
-                <span class="suggestion-substance"> — {{ drug.activeSubstance }}</span>
+                <span class="suggestion-substance"> — RxCUI {{ drug.rxcui }}</span>
               </li>
             </ul>
           </div>

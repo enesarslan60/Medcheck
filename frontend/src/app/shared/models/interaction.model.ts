@@ -1,11 +1,12 @@
-export type Severity = 'SEVERE' | 'MODERATE' | 'MILD' | 'NONE';
+export type InteractionSource =
+  | 'LOCAL_CACHE'
+  | 'OPENFDA_RXCUI'
+  | 'OPENFDA_GENERIC_NAME'
+  | 'NOT_FOUND';
 
-export interface Interaction {
-  id?: number;
-  drug1: string;
-  drug2: string;
-  severity: Severity;
-  description: string;
-  llmExplanation: string;
-  source?: 'LOCAL' | 'OPENFDA' | 'NONE';
+export interface DrugInteractionData {
+  drugName: string;
+  rxcui: string | null;
+  interactionText: string | null;
+  source: InteractionSource;
 }

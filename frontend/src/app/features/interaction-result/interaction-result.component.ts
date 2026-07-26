@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { InteractionService } from '../../core/services/interaction.service';
-import { Interaction } from '../../shared/models/interaction.model';
+import { DrugInteractionData } from '../../shared/models/interaction.model';
 
 @Component({
   selector: 'app-interaction-result',
@@ -13,7 +13,7 @@ import { Interaction } from '../../shared/models/interaction.model';
   styleUrls: ['./interaction-result.component.scss']
 })
 export class InteractionResultComponent implements OnInit {
-  results: Interaction[] = [];
+  results: DrugInteractionData[] = [];
 
   constructor(
     private interactionService: InteractionService,
@@ -27,8 +27,8 @@ export class InteractionResultComponent implements OnInit {
     }
   }
 
-  hasRealInteractions(): boolean {
-    return this.results.some((r) => r.severity !== 'NONE');
+  hasAnyData(): boolean {
+    return this.results.some((r) => r.interactionText !== null);
   }
 
   back(): void {
