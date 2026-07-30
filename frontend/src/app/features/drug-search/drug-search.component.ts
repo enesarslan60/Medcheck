@@ -135,7 +135,7 @@ export class DrugSearchComponent implements OnInit {
     this.interactionService.check(names).subscribe({
       next: (results) => {
         this.loading = false;
-        this.interactionService.setResults(results);
+        this.interactionService.setResult(results);
         this.router.navigate(['/results']);
       },
       error: () => {

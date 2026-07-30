@@ -7,54 +7,127 @@
   h2 { font-size: 20px; }
 }
 
-.drug-panel {
-  padding: 16px;
-  margin-bottom: 16px;
+/* Top summary — always visible */
+.summary-card {
+  padding: 20px 22px;
+  margin-bottom: 20px;
   background: #fff;
   border: 1px solid #e5e7eb;
+  border-left-width: 6px;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.panel-heading {
-  h3 { font-size: 17px; margin-bottom: 4px; }
-  .meta { font-size: 12px; color: #6b7280; }
+.summary-card.severity-low     { border-left-color: #2e7d32; background: #e8f5e9; }
+.summary-card.severity-medium  { border-left-color: #ef6c00; background: #fff3e0; }
+.summary-card.severity-high    { border-left-color: #c62828; background: #ffebee; }
+.summary-card.severity-unknown { border-left-color: #607d8b; background: #f1f5f9; }
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.source-tag { margin-left: 8px; color: #6b7280; font-size: 12px; }
-
-.no-data-panel {
-  text-align: center;
-  padding: 32px;
-  border-radius: 12px;
-  border-left: 6px solid #1976d2;
-  background: #e3f2fd;
-
-  .info-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #1976d2;
-    color: #fff;
-    font-family: Georgia, serif;
-    font-style: italic;
-    font-size: 28px;
-    font-weight: 700;
-  }
-
-  h3 { color: #0d47a1; margin: 12px 0 8px; }
+.severity-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
+.severity-low    .severity-pill { background: #2e7d32; }
+.severity-medium .severity-pill { background: #ef6c00; }
+.severity-high   .severity-pill { background: #c62828; }
+.severity-unknown .severity-pill { background: #607d8b; }
 
-.empty {
+.llm-tag {
+  font-size: 12px;
   color: #6b7280;
   font-style: italic;
-  margin: 12px 0;
 }
 
-.interaction-text {
+.summary-text {
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2937;
+  margin: 0;
+}
+.summary-text.muted { color: #4b5563; }
+
+/* Per-drug expandable panels */
+.drug-list { display: flex; flex-direction: column; gap: 10px; }
+
+.drug-panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.drug-panel.open { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); }
+
+.drug-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.drug-header:hover { background: #f9fafb; }
+
+.drug-name { font-weight: 500; font-size: 16px; flex: 1; }
+.drug-rxcui { color: #6b7280; font-size: 12px; }
+.chevron { color: #6b7280; font-size: 14px; }
+
+.drug-body {
+  padding: 12px 16px 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Tab switch */
+.tab-switch {
+  display: inline-flex;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.tab-button {
+  padding: 6px 14px;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  color: #1976d2;
+  transition: background 0.15s, color 0.15s;
+}
+.tab-button + .tab-button { border-left: 1px solid #cbd5e1; }
+.tab-button:hover:not(:disabled):not(.active) { background: #eff6ff; }
+.tab-button.active { background: #1976d2; color: #fff; }
+.tab-button:disabled { color: #9ca3af; cursor: not-allowed; background: #f9fafb; }
+
+.tab-panel { min-height: 40px; }
+
+.ai-summary {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2937;
+}
+
+.raw-text {
   font-size: 13px;
   line-height: 1.5;
   color: #374151;
@@ -62,8 +135,14 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 12px 14px;
-  margin: 12px 0 0;
+  margin: 0;
   white-space: pre-wrap;
   overflow-x: auto;
   font-family: inherit;
+}
+
+.empty {
+  color: #6b7280;
+  font-style: italic;
+  margin: 0;
 }

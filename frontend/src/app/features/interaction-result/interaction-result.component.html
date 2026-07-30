@@ -1,30 +1,84 @@
 <div class="result-header">
-  <h2>Interaction data</h2>
-  <button type="button" class="btn-outline" (click)="back()">← Check again</button>
+  <h2>Interaktionsanalyse</h2>
+  <button type="button" class="btn-outline" (click)="back()">← Neu prüfen</button>
 </div>
 
-<div *ngIf="!hasAnyData()" class="no-data-panel">
-  <div class="info-icon">i</div>
-  <h3>No openFDA interaction data available</h3>
-  <p>
-    None of the selected drugs returned a drug_interactions section from
-    openFDA. Always confirm with your doctor or pharmacist.
-  </p>
-</div>
+<ng-container *ngIf="result">
+  <!-- Top summary: always visible, no click needed -->
+  <section class="summary-card" [ngClass]="severityClass(result.severity)">
+    <div class="summary-header">
+      <span class="severity-pill">{{ severityLabel(result.severity) }}</span>
+      <span class="llm-tag" *ngIf="!result.llmAvailable">KI derzeit nicht verfügbar</span>
+    </div>
 
-<ng-container *ngIf="hasAnyData()">
-  <article *ngFor="let result of results" class="drug-panel">
-    <header class="panel-heading">
-      <h3>{{ result.drugName }}</h3>
-      <div class="meta">
-        <span *ngIf="result.rxcui">RxCUI {{ result.rxcui }}</span>
-        <span class="source-tag">· source: {{ result.source }}</span>
-      </div>
-    </header>
-
-    <p *ngIf="!result.interactionText" class="empty">
-      No openFDA drug_interactions text was found for this drug.
+    <p *ngIf="result.interactionSummary" class="summary-text">
+      {{ result.interactionSummary }}
     </p>
-    <pre *ngIf="result.interactionText" class="interaction-text">{{ result.interactionText }}</pre>
-  </article>
+
+    <p *ngIf="!result.interactionSummary" class="summary-text muted">
+      Es konnte keine automatische Erklärung erzeugt werden. Bitte die Rohdaten
+      der einzelnen Medikamente unten prüfen und im Zweifel Arzt oder Apotheker
+      konsultieren.
+    </p>
+  </section>
+
+  <!-- Per drug: single expandable panel with AI/FDA tab switch -->
+  <div class="drug-list">
+    <article
+      *ngFor="let drug of result.drugs; let i = index"
+      class="drug-panel"
+      [class.open]="openIndex === i">
+
+      <button
+        type="button"
+        class="drug-header"
+        [attr.aria-expanded]="openIndex === i"
+        (click)="togglePanel(i)">
+        <span class="drug-name">{{ drug.drugName }}</span>
+        <span class="drug-rxcui" *ngIf="drug.rxcui">RxCUI {{ drug.rxcui }}</span>
+        <span class="chevron" aria-hidden="true">{{ openIndex === i ? '▾' : '▸' }}</span>
+      </button>
+
+      <div class="drug-body" *ngIf="openIndex === i">
+        <div class="tab-switch" role="tablist">
+          <button
+            type="button"
+            class="tab-button"
+            role="tab"
+            [class.active]="currentTab(i, drug) === 'ai'"
+            [disabled]="!drug.aiSideEffectSummary"
+            (click)="setTab(i, 'ai')">
+            AI Kurzfassung
+          </button>
+          <button
+            type="button"
+            class="tab-button"
+            role="tab"
+            [class.active]="currentTab(i, drug) === 'raw'"
+            [disabled]="!drug.openFdaRawText"
+            (click)="setTab(i, 'raw')">
+            FDA-Original
+          </button>
+        </div>
+
+        <div class="tab-panel" [ngSwitch]="currentTab(i, drug)">
+          <ng-container *ngSwitchCase="'ai'">
+            <p *ngIf="drug.aiSideEffectSummary" class="ai-summary">
+              {{ drug.aiSideEffectSummary }}
+            </p>
+            <p *ngIf="!drug.aiSideEffectSummary" class="empty">
+              Keine KI-Kurzfassung verfügbar. Bitte das FDA-Original einsehen.
+            </p>
+          </ng-container>
+
+          <ng-container *ngSwitchCase="'raw'">
+            <pre *ngIf="drug.openFdaRawText" class="raw-text">{{ drug.openFdaRawText }}</pre>
+            <p *ngIf="!drug.openFdaRawText" class="empty">
+              openFDA hat für dieses Medikament keinen drug_interactions-Text.
+            </p>
+          </ng-container>
+        </div>
+      </div>
+    </article>
+  </div>
 </ng-container>
