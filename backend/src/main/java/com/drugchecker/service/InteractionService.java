@@ -34,7 +34,14 @@ import java.util.concurrent.ExecutionException;
 public class InteractionService {
 
     private static final Logger log = LoggerFactory.getLogger(InteractionService.class);
+    /** Max length stored in the H2 cache / passed back to the frontend. */
     private static final int MAX_TEXT_LENGTH = 7900;
+    /**
+     * Max length passed to the LLM per drug. Much smaller than
+     * {@link #MAX_TEXT_LENGTH} on purpose: giant openFDA aggregations
+     * hurt CPU-only Ollama badly and don't improve model output.
+     */
+    private static final int MAX_LLM_INPUT_LENGTH = 3000;
 
     private final RxNormService rxNormService;
     private final OpenFDAService openFDAService;
@@ -72,19 +79,24 @@ public class InteractionService {
             return buildFallback(raw);
         }
 
-        // 3. Fire LLM calls in parallel.
+        // 3. Fire LLM calls in parallel. Trim the openFDA text down to a
+        //    length that keeps CPU-only Ollama tractable — the frontend
+        //    still receives the full text via DrugDetail.openFdaRawText.
         List<String> names = raw.stream().map(DrugInteractionData::drugName).toList();
-        List<String> texts = raw.stream().map(DrugInteractionData::interactionText).toList();
+        List<String> llmTexts = raw.stream()
+                .map(d -> truncate(d.interactionText(), MAX_LLM_INPUT_LENGTH))
+                .toList();
 
         CompletableFuture<LlmVerdict> verdictFuture =
-                CompletableFuture.supplyAsync(() -> llmProvider.explainInteraction(names, texts));
+                CompletableFuture.supplyAsync(() -> llmProvider.explainInteraction(names, llmTexts));
 
         List<CompletableFuture<String>> summaryFutures = new ArrayList<>(raw.size());
         for (DrugInteractionData d : raw) {
+            String shortText = truncate(d.interactionText(), MAX_LLM_INPUT_LENGTH);
             summaryFutures.add(CompletableFuture.supplyAsync(() ->
-                    d.interactionText() == null || d.interactionText().isBlank()
+                    shortText == null || shortText.isBlank()
                             ? null
-                            : llmProvider.summarizeSideEffects(d.drugName(), d.interactionText())));
+                            : llmProvider.summarizeSideEffects(d.drugName(), shortText)));
         }
 
         try {
