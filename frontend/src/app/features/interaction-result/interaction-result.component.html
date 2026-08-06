@@ -6,20 +6,30 @@
 <ng-container *ngIf="result">
   <!-- Top summary: always visible, no click needed -->
   <section class="summary-card" [ngClass]="severityClass(result.severity)">
-    <div class="summary-header">
-      <span class="severity-pill">{{ severityLabel(result.severity) }}</span>
-      <span class="llm-tag" *ngIf="!result.llmAvailable">KI derzeit nicht verfügbar</span>
+    <div class="summary-card-row">
+      <div class="traffic-light" [attr.aria-label]="'severity ' + result.severity">
+        <span class="light red"    [class.on]="result.severity === 'HIGH'"></span>
+        <span class="light yellow" [class.on]="result.severity === 'MEDIUM'"></span>
+        <span class="light green"  [class.on]="result.severity === 'LOW'"></span>
+      </div>
+
+      <div class="summary-card-body">
+        <div class="summary-header">
+          <span class="severity-pill">{{ severityLabel(result.severity) }}</span>
+          <span class="llm-tag" *ngIf="!result.llmAvailable">KI derzeit nicht verfügbar</span>
+        </div>
+
+        <p *ngIf="result.interactionSummary" class="summary-text">
+          {{ result.interactionSummary }}
+        </p>
+
+        <p *ngIf="!result.interactionSummary" class="summary-text muted">
+          Es konnte keine automatische Erklärung erzeugt werden. Bitte die Rohdaten
+          der einzelnen Medikamente unten prüfen und im Zweifel Arzt oder Apotheker
+          konsultieren.
+        </p>
+      </div>
     </div>
-
-    <p *ngIf="result.interactionSummary" class="summary-text">
-      {{ result.interactionSummary }}
-    </p>
-
-    <p *ngIf="!result.interactionSummary" class="summary-text muted">
-      Es konnte keine automatische Erklärung erzeugt werden. Bitte die Rohdaten
-      der einzelnen Medikamente unten prüfen und im Zweifel Arzt oder Apotheker
-      konsultieren.
-    </p>
   </section>
 
   <!-- Per drug: single expandable panel with AI/FDA tab switch -->
