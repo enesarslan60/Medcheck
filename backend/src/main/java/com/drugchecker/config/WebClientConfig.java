@@ -59,6 +59,24 @@ public class WebClientConfig {
         return builder.build();
     }
 
+    @Bean
+    public WebClient geminiWebClient(
+            @Value("${gemini.base-url:https://generativelanguage.googleapis.com}") String baseUrl,
+            @Value("${gemini.timeout-seconds:15}") int timeoutSeconds) {
+
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutSeconds * 1000)
+                .responseTimeout(Duration.ofSeconds(timeoutSeconds));
+
+        return WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .exchangeStrategies(largeBufferStrategies())
+                .build();
+    }
+
     private ExchangeStrategies largeBufferStrategies() {
         return ExchangeStrategies.builder()
                 .codecs(cfg -> cfg.defaultCodecs().maxInMemorySize(BUFFER_SIZE))

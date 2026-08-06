@@ -5,7 +5,6 @@ import com.drugchecker.dto.DrugInteractionData;
 import com.drugchecker.dto.InteractionExplanationResponse;
 import com.drugchecker.dto.RxNormCandidate;
 import com.drugchecker.dto.anthropic.LlmVerdict;
-import com.drugchecker.exception.AnthropicApiException;
 import com.drugchecker.model.DrugInteractionText;
 import com.drugchecker.model.Severity;
 import com.drugchecker.repository.DrugInteractionTextRepository;
@@ -26,7 +25,8 @@ import java.util.concurrent.ExecutionException;
  *   <li>Resolve each free-text drug name to an RxCUI via {@link RxNormService}.</li>
  *   <li>Fetch (and cache) the openFDA drug_interactions text per drug.</li>
  *   <li>Run the LLM analysis in parallel — one interaction verdict + N
- *       per-drug side-effect summaries — via {@link AnthropicService}.</li>
+ *       per-drug side-effect summaries — via the configured
+ *       {@link LlmProvider} (Anthropic or Gemini).</li>
  *   <li>Gracefully degrade to raw-only data if the LLM step fails.</li>
  * </ol>
  */
@@ -39,16 +39,16 @@ public class InteractionService {
     private final RxNormService rxNormService;
     private final OpenFDAService openFDAService;
     private final DrugInteractionTextRepository cacheRepository;
-    private final AnthropicService anthropicService;
+    private final LlmProvider llmProvider;
 
     public InteractionService(RxNormService rxNormService,
                               OpenFDAService openFDAService,
                               DrugInteractionTextRepository cacheRepository,
-                              AnthropicService anthropicService) {
+                              LlmProvider llmProvider) {
         this.rxNormService = rxNormService;
         this.openFDAService = openFDAService;
         this.cacheRepository = cacheRepository;
-        this.anthropicService = anthropicService;
+        this.llmProvider = llmProvider;
     }
 
     public InteractionExplanationResponse checkInteractions(List<String> drugNames) {
@@ -66,9 +66,9 @@ public class InteractionService {
             return new InteractionExplanationResponse(Severity.UNKNOWN, null, List.of(), false);
         }
 
-        // 2. If Anthropic isn't configured, ship the raw data straight away.
-        if (!anthropicService.isConfigured()) {
-            log.info("Anthropic not configured — returning raw-only interaction data");
+        // 2. If the LLM provider isn't configured, ship the raw data straight away.
+        if (!llmProvider.isConfigured()) {
+            log.info("LLM provider not configured — returning raw-only interaction data");
             return buildFallback(raw);
         }
 
@@ -77,14 +77,14 @@ public class InteractionService {
         List<String> texts = raw.stream().map(DrugInteractionData::interactionText).toList();
 
         CompletableFuture<LlmVerdict> verdictFuture =
-                CompletableFuture.supplyAsync(() -> anthropicService.explainInteraction(names, texts));
+                CompletableFuture.supplyAsync(() -> llmProvider.explainInteraction(names, texts));
 
         List<CompletableFuture<String>> summaryFutures = new ArrayList<>(raw.size());
         for (DrugInteractionData d : raw) {
             summaryFutures.add(CompletableFuture.supplyAsync(() ->
                     d.interactionText() == null || d.interactionText().isBlank()
                             ? null
-                            : anthropicService.summarizeSideEffects(d.drugName(), d.interactionText())));
+                            : llmProvider.summarizeSideEffects(d.drugName(), d.interactionText())));
         }
 
         try {
