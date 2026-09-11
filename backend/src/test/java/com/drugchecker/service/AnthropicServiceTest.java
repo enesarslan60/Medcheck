@@ -4,6 +4,7 @@ import com.drugchecker.config.WebClientConfig;
 import com.drugchecker.dto.anthropic.LlmVerdict;
 import com.drugchecker.exception.AnthropicApiException;
 import com.drugchecker.model.Severity;
+import com.drugchecker.model.SupportedLanguage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -51,7 +52,7 @@ class AnthropicServiceTest {
 
         LlmVerdict verdict = service.explainInteraction(
                 List.of("warfarin", "ibuprofen"),
-                List.of("warfarin text", "ibuprofen text"));
+                List.of("warfarin text", "ibuprofen text"), SupportedLanguage.GERMAN);
 
         assertThat(verdict.severity()).isEqualTo(Severity.HIGH);
         assertThat(verdict.summary()).contains("Blutungen");
@@ -69,7 +70,7 @@ class AnthropicServiceTest {
     void explainInteraction_normalisesSeveritySynonyms() {
         server.enqueue(claudeResponse("{\"severity\": \"MODERATE\", \"summary\": \"mittel\"}"));
         LlmVerdict verdict = service.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb"));
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN);
         assertThat(verdict.severity()).isEqualTo(Severity.MEDIUM);
         assertThat(verdict.parsed()).isTrue();
     }
@@ -79,7 +80,7 @@ class AnthropicServiceTest {
         server.enqueue(claudeResponse("Sorry, I cannot help with medical advice."));
 
         LlmVerdict verdict = service.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb"));
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN);
 
         assertThat(verdict.severity()).isEqualTo(Severity.UNKNOWN);
         assertThat(verdict.parsed()).isFalse();
@@ -92,7 +93,7 @@ class AnthropicServiceTest {
                 "Sure — here you go:\n{\"severity\":\"low\",\"summary\":\"unbedenklich\"}\nlet me know."));
 
         LlmVerdict verdict = service.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb"));
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN);
 
         assertThat(verdict.severity()).isEqualTo(Severity.LOW);
         assertThat(verdict.summary()).isEqualTo("unbedenklich");
@@ -104,7 +105,7 @@ class AnthropicServiceTest {
         server.enqueue(new MockResponse().setResponseCode(500).setBody("{\"error\":\"boom\"}"));
 
         assertThatThrownBy(() -> service.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb")))
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN))
                 .isInstanceOf(AnthropicApiException.class)
                 .hasMessageContaining("500");
     }
@@ -113,7 +114,7 @@ class AnthropicServiceTest {
     void summarizeSideEffects_returnsPlainText() {
         server.enqueue(claudeResponse("Kann zu Magenblutungen führen. Bitte mit Arzt sprechen."));
 
-        String summary = service.summarizeSideEffects("ibuprofen", "GI bleeding risk...");
+        String summary = service.summarizeSideEffects("ibuprofen", "GI bleeding risk...", SupportedLanguage.GERMAN);
 
         assertThat(summary).startsWith("Kann zu Magenblutungen");
     }
@@ -127,7 +128,7 @@ class AnthropicServiceTest {
 
         assertThat(unconfigured.isConfigured()).isFalse();
         assertThatThrownBy(() -> unconfigured.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb")))
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN))
                 .isInstanceOf(AnthropicApiException.class)
                 .hasMessageContaining("not configured");
     }
@@ -143,7 +144,7 @@ class AnthropicServiceTest {
                 .setBodyDelay(3, TimeUnit.SECONDS));
 
         assertThatThrownBy(() -> fast.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb")))
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN))
                 .isInstanceOf(AnthropicApiException.class);
     }
 

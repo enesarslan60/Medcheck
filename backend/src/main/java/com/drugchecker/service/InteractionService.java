@@ -7,6 +7,7 @@ import com.drugchecker.dto.RxNormCandidate;
 import com.drugchecker.dto.anthropic.LlmVerdict;
 import com.drugchecker.model.DrugInteractionText;
 import com.drugchecker.model.Severity;
+import com.drugchecker.model.SupportedLanguage;
 import com.drugchecker.repository.DrugInteractionTextRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +59,17 @@ public class InteractionService {
         this.llmProvider = llmProvider;
     }
 
+    /** Convenience overload — defaults to {@link SupportedLanguage#DEFAULT}. */
     public InteractionExplanationResponse checkInteractions(List<String> drugNames) {
+        return checkInteractions(drugNames, SupportedLanguage.DEFAULT);
+    }
+
+    public InteractionExplanationResponse checkInteractions(List<String> drugNames,
+                                                             SupportedLanguage language) {
         if (drugNames == null || drugNames.isEmpty()) {
             return new InteractionExplanationResponse(Severity.UNKNOWN, null, List.of(), false);
         }
+        SupportedLanguage lang = language != null ? language : SupportedLanguage.DEFAULT;
 
         // 1. Raw data per drug (cached).
         List<DrugInteractionData> raw = new ArrayList<>(drugNames.size());
@@ -88,7 +96,8 @@ public class InteractionService {
                 .toList();
 
         CompletableFuture<LlmVerdict> verdictFuture =
-                CompletableFuture.supplyAsync(() -> llmProvider.explainInteraction(names, llmTexts));
+                CompletableFuture.supplyAsync(() ->
+                        llmProvider.explainInteraction(names, llmTexts, lang));
 
         List<CompletableFuture<String>> summaryFutures = new ArrayList<>(raw.size());
         for (DrugInteractionData d : raw) {
@@ -96,7 +105,7 @@ public class InteractionService {
             summaryFutures.add(CompletableFuture.supplyAsync(() ->
                     shortText == null || shortText.isBlank()
                             ? null
-                            : llmProvider.summarizeSideEffects(d.drugName(), shortText)));
+                            : llmProvider.summarizeSideEffects(d.drugName(), shortText, lang)));
         }
 
         try {

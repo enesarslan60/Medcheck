@@ -6,6 +6,7 @@ import com.drugchecker.dto.ollama.OllamaChatOptions;
 import com.drugchecker.dto.ollama.OllamaChatRequest;
 import com.drugchecker.dto.ollama.OllamaChatResponse;
 import com.drugchecker.exception.OllamaApiException;
+import com.drugchecker.model.SupportedLanguage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,16 +59,20 @@ public class OllamaService implements LlmProvider {
     }
 
     @Override
-    public LlmVerdict explainInteraction(List<String> drugNames, List<String> drugTexts) {
+    public LlmVerdict explainInteraction(List<String> drugNames,
+                                         List<String> drugTexts,
+                                         SupportedLanguage language) {
         String userMessage = AnthropicPrompts.interactionUserMessage(drugNames, drugTexts);
-        String raw = chat(AnthropicPrompts.INTERACTION_SYSTEM_PROMPT, userMessage);
+        String raw = chat(AnthropicPrompts.interactionSystemPrompt(language), userMessage);
         return LlmParsing.parseVerdict(raw, objectMapper);
     }
 
     @Override
-    public String summarizeSideEffects(String drugName, String labelText) {
+    public String summarizeSideEffects(String drugName,
+                                       String labelText,
+                                       SupportedLanguage language) {
         String userMessage = AnthropicPrompts.sideEffectsUserMessage(drugName, labelText);
-        String raw = chat(AnthropicPrompts.SIDE_EFFECTS_SYSTEM_PROMPT, userMessage);
+        String raw = chat(AnthropicPrompts.sideEffectsSystemPrompt(language), userMessage);
         return raw == null ? "" : raw.trim();
     }
 

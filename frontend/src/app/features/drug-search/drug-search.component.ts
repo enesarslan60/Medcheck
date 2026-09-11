@@ -8,6 +8,11 @@ import { debounceTime, switchMap, catchError, startWith } from 'rxjs/operators';
 import { DrugService } from '../../core/services/drug.service';
 import { InteractionService } from '../../core/services/interaction.service';
 import { RxNormCandidate } from '../../shared/models/rxnorm.model';
+import {
+  DEFAULT_LANGUAGE_CODE,
+  Language,
+  SUPPORTED_LANGUAGES
+} from '../../shared/models/language.model';
 
 interface DrugSlot {
   control: FormControl<string>;
@@ -30,11 +35,20 @@ export class DrugSearchComponent implements OnInit {
   loading = false;
   errorMessage: string | null = null;
 
+  readonly languages: Language[] = SUPPORTED_LANGUAGES;
+  selectedLanguage: string = DEFAULT_LANGUAGE_CODE;
+
   constructor(
     private drugService: DrugService,
     private interactionService: InteractionService,
     private router: Router
   ) {}
+
+  selectLanguage(code: string): void {
+    this.selectedLanguage = code;
+  }
+
+  trackByLanguageCode = (_: number, lang: Language) => lang.code;
 
   ngOnInit(): void {
     this.slots.push(this.createSlot());
@@ -132,7 +146,7 @@ export class DrugSearchComponent implements OnInit {
     }
     this.errorMessage = null;
     this.loading = true;
-    this.interactionService.check(names).subscribe({
+    this.interactionService.check(names, this.selectedLanguage).subscribe({
       next: (results) => {
         this.loading = false;
         this.interactionService.setResult(results);

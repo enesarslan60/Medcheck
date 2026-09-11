@@ -55,6 +55,22 @@
 
     <p class="hint">{{ selectedCount }} of {{ slots.length }} slots filled.</p>
 
+    <fieldset class="language-picker">
+      <legend>AI-Antwortsprache</legend>
+      <div class="language-buttons" role="radiogroup" aria-label="Response language">
+        <button
+          *ngFor="let lang of languages; trackBy: trackByLanguageCode"
+          type="button"
+          class="lang-button"
+          role="radio"
+          [class.active]="selectedLanguage === lang.code"
+          [attr.aria-checked]="selectedLanguage === lang.code"
+          (click)="selectLanguage(lang.code)">
+          {{ lang.displayName }}
+        </button>
+      </div>
+    </fieldset>
+
     <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
   </div>
 

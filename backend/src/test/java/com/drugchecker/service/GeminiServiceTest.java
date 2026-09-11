@@ -3,6 +3,7 @@ package com.drugchecker.service;
 import com.drugchecker.dto.anthropic.LlmVerdict;
 import com.drugchecker.exception.GeminiApiException;
 import com.drugchecker.model.Severity;
+import com.drugchecker.model.SupportedLanguage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
 import okhttp3.mockwebserver.MockResponse;
@@ -55,7 +56,7 @@ class GeminiServiceTest {
 
         LlmVerdict verdict = service.explainInteraction(
                 List.of("warfarin", "ibuprofen"),
-                List.of("warfarin text", "ibuprofen text"));
+                List.of("warfarin text", "ibuprofen text"), SupportedLanguage.GERMAN);
 
         assertThat(verdict.severity()).isEqualTo(Severity.HIGH);
         assertThat(verdict.summary()).contains("Blutungen");
@@ -74,7 +75,7 @@ class GeminiServiceTest {
         server.enqueue(geminiResponse("Sorry, cannot help with medical advice."));
 
         LlmVerdict verdict = service.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb"));
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN);
 
         assertThat(verdict.severity()).isEqualTo(Severity.UNKNOWN);
         assertThat(verdict.parsed()).isFalse();
@@ -85,7 +86,7 @@ class GeminiServiceTest {
         server.enqueue(new MockResponse().setResponseCode(500).setBody("{\"error\":\"boom\"}"));
 
         assertThatThrownBy(() -> service.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb")))
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN))
                 .isInstanceOf(GeminiApiException.class)
                 .hasMessageContaining("500");
     }
@@ -94,7 +95,7 @@ class GeminiServiceTest {
     void summarizeSideEffects_returnsPlainText() {
         server.enqueue(geminiResponse("Kann zu Magenblutungen führen."));
 
-        String summary = service.summarizeSideEffects("ibuprofen", "GI bleeding risk...");
+        String summary = service.summarizeSideEffects("ibuprofen", "GI bleeding risk...", SupportedLanguage.GERMAN);
 
         assertThat(summary).startsWith("Kann zu Magenblutungen");
     }
@@ -106,7 +107,7 @@ class GeminiServiceTest {
 
         assertThat(unconfigured.isConfigured()).isFalse();
         assertThatThrownBy(() -> unconfigured.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb")))
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN))
                 .isInstanceOf(GeminiApiException.class)
                 .hasMessageContaining("not configured");
     }
@@ -120,7 +121,7 @@ class GeminiServiceTest {
                 .setBodyDelay(3, TimeUnit.SECONDS));
 
         assertThatThrownBy(() -> fast.explainInteraction(
-                List.of("a", "b"), List.of("aa", "bb")))
+                List.of("a", "b"), List.of("aa", "bb"), SupportedLanguage.GERMAN))
                 .isInstanceOf(GeminiApiException.class);
     }
 

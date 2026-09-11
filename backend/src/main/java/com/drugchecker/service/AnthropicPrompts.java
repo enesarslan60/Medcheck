@@ -1,14 +1,16 @@
 package com.drugchecker.service;
 
+import com.drugchecker.model.SupportedLanguage;
+
 import java.util.List;
 
 /**
- * Central catalogue of the prompts sent to Claude.
+ * Central catalogue of the prompts sent to the LLM.
  *
- * <p>System prompts are kept in English because Claude follows English
- * instructions most reliably; every prompt instructs the model to
- * <em>answer in German</em> so the end-user sees German output regardless
- * of the source data language.
+ * <p>System prompts are kept in English because Claude / Gemini / Llama
+ * follow English instructions most reliably; a {@link SupportedLanguage}
+ * placeholder is injected into two spots per prompt to steer the target
+ * language of the response.
  *
  * <p>All prompts are grounded in the exact openFDA text passed in — the
  * model is told not to invent medical facts and to defer to a doctor /
@@ -20,11 +22,11 @@ public final class AnthropicPrompts {
     }
 
     // ---------------------------------------------------------------------
-    // System prompts — verbatim, so they can be quoted in the thesis
+    // Base system prompts — {LANGUAGE} is replaced with the target language's
+    // English name (e.g. "German", "Turkish") before the call.
     // ---------------------------------------------------------------------
 
-    /** System prompt for {@link AnthropicService#explainInteraction}. */
-    public static final String INTERACTION_SYSTEM_PROMPT = """
+    private static final String INTERACTION_SYSTEM_PROMPT_BASE = """
             You are a medical assistant helping non-medical users understand
             drug interactions.
 
@@ -39,7 +41,7 @@ public final class AnthropicPrompts {
               2. Write a short explanation (2–4 sentences) for a layperson.
 
             Rules:
-              - Answer STRICTLY in German, in plain, understandable language.
+              - Answer STRICTLY in {LANGUAGE}, in plain, understandable language.
               - Be CONSERVATIVE: if the evidence is ambiguous, err on the
                 higher severity. Never downgrade a clear warning.
               - Always tell the reader to consult a doctor or pharmacist for
@@ -50,19 +52,20 @@ public final class AnthropicPrompts {
 
               { "severity": "LOW" | "MEDIUM" | "HIGH",
                 "summary": "..." }
+
+            The value of "summary" must be written in {LANGUAGE}.
             """;
 
-    /** System prompt for {@link AnthropicService#summarizeSideEffects}. */
-    public static final String SIDE_EFFECTS_SYSTEM_PROMPT = """
+    private static final String SIDE_EFFECTS_SYSTEM_PROMPT_BASE = """
             You are a medical assistant helping non-medical users understand
             what a medication does.
 
             You will be given the openFDA drug_interactions text for a single
             medication. Summarise the most important warnings and side effects
-            for a layperson in 2–4 short German sentences.
+            for a layperson in 2–4 short sentences in {LANGUAGE}.
 
             Rules:
-              - Answer STRICTLY in German.
+              - Answer STRICTLY in {LANGUAGE}.
               - Use only information contained in the provided text.
               - Do not invent side effects or interactions.
               - Recommend consulting a doctor or pharmacist if unsure.
@@ -71,9 +74,19 @@ public final class AnthropicPrompts {
             headings, just the sentences.
             """;
 
+    /** System prompt for the pair-interaction analysis, targeted at {@code lang}. */
+    public static String interactionSystemPrompt(SupportedLanguage lang) {
+        return INTERACTION_SYSTEM_PROMPT_BASE.replace("{LANGUAGE}", lang.getEnglishName());
+    }
+
+    /** System prompt for the per-drug side-effects summary, targeted at {@code lang}. */
+    public static String sideEffectsSystemPrompt(SupportedLanguage lang) {
+        return SIDE_EFFECTS_SYSTEM_PROMPT_BASE.replace("{LANGUAGE}", lang.getEnglishName());
+    }
+
     // ---------------------------------------------------------------------
-    // User-message builders — keep the wire format identical to what the
-    // model sees so it can be reproduced 1:1 in the thesis.
+    // User-message builders — identical across languages; the target
+    // language is enforced solely via the system prompt.
     // ---------------------------------------------------------------------
 
     /** Builds the user message for an interaction explanation. */
@@ -105,7 +118,7 @@ public final class AnthropicPrompts {
         sb.append(labelText != null && !labelText.isBlank()
                 ? labelText
                 : "(no openFDA text available)");
-        sb.append("\n\nWrite the German summary now, plain text only.");
+        sb.append("\n\nWrite the summary now, plain text only.");
         return sb.toString();
     }
 }

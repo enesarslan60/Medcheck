@@ -1,6 +1,7 @@
 package com.drugchecker.service;
 
 import com.drugchecker.dto.anthropic.LlmVerdict;
+import com.drugchecker.model.SupportedLanguage;
 
 import java.util.List;
 
@@ -17,15 +18,23 @@ public interface LlmProvider {
     boolean isConfigured();
 
     /**
-     * Ask the LLM for a severity classification + short German explanation
-     * of the interaction between the given drugs, using their openFDA
+     * Ask the LLM for a severity classification + short explanation of the
+     * interaction between the given drugs, using their openFDA
      * drug_interactions texts as the sole source of truth.
+     *
+     * @param language target language for the {@code summary} field
      */
-    LlmVerdict explainInteraction(List<String> drugNames, List<String> drugTexts);
+    LlmVerdict explainInteraction(List<String> drugNames,
+                                  List<String> drugTexts,
+                                  SupportedLanguage language);
 
     /**
-     * Ask the LLM for a short German summary of the important warnings for
-     * a single drug based on its openFDA drug_interactions text.
+     * Ask the LLM for a short summary of the important warnings for a
+     * single drug based on its openFDA drug_interactions text.
+     *
+     * @param language target language for the summary text
      */
-    String summarizeSideEffects(String drugName, String labelText);
+    String summarizeSideEffects(String drugName,
+                                String labelText,
+                                SupportedLanguage language);
 }

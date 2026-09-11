@@ -91,6 +91,42 @@
 .hint  { color: #6b7280; font-size: 13px; margin-top: 12px; }
 .error { color: #c62828; font-size: 14px; margin-top: 8px; }
 
+/* Language picker — pill row of native language names */
+.language-picker {
+  margin: 16px 0 4px;
+  padding: 10px 0 0;
+  border: none;
+
+  legend {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    padding: 0;
+  }
+}
+.language-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lang-button {
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: #1976d2;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.lang-button:hover:not(.active) { background: #eff6ff; }
+.lang-button.active {
+  background: #1976d2;
+  color: #fff;
+  border-color: #1976d2;
+}
+
 .spinner {
   width: 18px;
   height: 18px;

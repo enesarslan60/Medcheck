@@ -8,6 +8,7 @@ import com.drugchecker.dto.gemini.GeminiRequest;
 import com.drugchecker.dto.gemini.GeminiResponse;
 import com.drugchecker.dto.gemini.GeminiSystemInstruction;
 import com.drugchecker.exception.GeminiApiException;
+import com.drugchecker.model.SupportedLanguage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,16 +62,20 @@ public class GeminiService implements LlmProvider {
     }
 
     @Override
-    public LlmVerdict explainInteraction(List<String> drugNames, List<String> drugTexts) {
+    public LlmVerdict explainInteraction(List<String> drugNames,
+                                         List<String> drugTexts,
+                                         SupportedLanguage language) {
         String userMessage = AnthropicPrompts.interactionUserMessage(drugNames, drugTexts);
-        String raw = generate(AnthropicPrompts.INTERACTION_SYSTEM_PROMPT, userMessage);
+        String raw = generate(AnthropicPrompts.interactionSystemPrompt(language), userMessage);
         return LlmParsing.parseVerdict(raw, objectMapper);
     }
 
     @Override
-    public String summarizeSideEffects(String drugName, String labelText) {
+    public String summarizeSideEffects(String drugName,
+                                       String labelText,
+                                       SupportedLanguage language) {
         String userMessage = AnthropicPrompts.sideEffectsUserMessage(drugName, labelText);
-        String raw = generate(AnthropicPrompts.SIDE_EFFECTS_SYSTEM_PROMPT, userMessage);
+        String raw = generate(AnthropicPrompts.sideEffectsSystemPrompt(language), userMessage);
         return raw == null ? "" : raw.trim();
     }
 
