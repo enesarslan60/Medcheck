@@ -18,6 +18,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'tr', displayName: 'Türkçe' },
   { code: 'nl', displayName: 'Nederlands' },
   { code: 'pl', displayName: 'Polski' },
+  { code: 'ru', displayName: 'Русский' },
   { code: 'ar', displayName: 'العربية' }
 ];
 

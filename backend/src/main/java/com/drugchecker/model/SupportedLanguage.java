@@ -22,6 +22,7 @@ public enum SupportedLanguage {
     TURKISH   ("tr", "Türkçe",     "Turkish"),
     DUTCH     ("nl", "Nederlands", "Dutch"),
     POLISH    ("pl", "Polski",     "Polish"),
+    RUSSIAN   ("ru", "Русский",    "Russian"),
     ARABIC    ("ar", "العربية",   "Arabic");
 
     public static final SupportedLanguage DEFAULT = GERMAN;
