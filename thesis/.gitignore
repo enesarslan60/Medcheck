@@ -1,0 +1,18 @@
+# LaTeX-Build-Artefakte
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.run.xml
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+*.pdf
+
+# Rohdaten der Befragung (personenbezogene Interviewdaten) nicht ins Repository
+kapitel/anhang-umfrage.tex

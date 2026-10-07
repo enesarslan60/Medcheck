@@ -1,0 +1,23 @@
+\chapter{Einleitung}
+\label{ch:einleitung}
+
+\section{Motivation}
+
+Mit steigendem Alter und zunehmender Zahl chronischer Erkrankungen nehmen viele Menschen mehrere Arzneimittel gleichzeitig ein. Diese Polypharmazie erhöht das Risiko von Arzneimittelwechselwirkungen (engl.\ \emph{drug--drug interactions}, DDIs), bei denen ein Wirkstoff die Wirkung oder die Verstoffwechselung eines anderen verändert. Ein klassisches Beispiel ist die Kombination des Gerinnungshemmers Warfarin mit dem nichtsteroidalen Antirheumatikum Ibuprofen: Beide Wirkstoffe beeinträchtigen die Blutgerinnung, sodass das Risiko schwerer, insbesondere gastrointestinaler Blutungen deutlich steigt. Ibuprofen ist zudem rezeptfrei erhältlich und wird daher häufig ohne ärztliche Rücksprache eingenommen.
+
+Für Fachpersonal existieren etablierte Interaktionsdatenbanken und klinische Entscheidungsunterstützungssysteme (CDSS), etwa Lexicomp oder UpToDate~\cite{UpToDate}. Für Laien stehen frei zugängliche Interaktionschecker wie Drugs.com~\cite{DrugsCom2025} oder der Wechselwirkungs-Check der Apotheken Umschau~\cite{ApothekenUmschau} zur Verfügung. Studien zeigen jedoch, dass sich die Ergebnisse verschiedener Datenbanken unterscheiden~\cite{article, Roca2022} und dass die Texte für medizinische Laien oft schwer verständlich sind. Gleichzeitig nutzen immer mehr Menschen KI-Assistenten wie Gemini~\cite{GoogleGemini} für Gesundheitsfragen. Deren Antworten sind gut lesbar, beruhen aber auf dem Trainingswissen des Modells und sind nicht ohne Weiteres überprüfbar. Vergleichsstudien berichten für solche Modelle eine hohe Sensitivität bei gleichzeitig geringer Spezifität, also eine Tendenz, Wechselwirkungen zu überschätzen~\cite{MOHAMMED2026100733}.
+
+\section{Problemstellung und Zielsetzung}
+
+Es besteht damit eine Lücke zwischen verlässlichen, aber schwer verständlichen Fachinformationen einerseits und gut verständlichen, aber nicht ausreichend verlässlichen KI-Antworten andererseits. Ziel dieser Arbeit ist die Entwicklung und Evaluation eines Prototyps, der diese Lücke schließt. Der Prototyp \emph{Medcheck} bezieht die Interaktionsinformationen aus der amtlichen Datenquelle openFDA~\cite{openFDA} und setzt ein Sprachmodell ausschließlich dazu ein, diese Informationen in eine verständliche Form zu bringen. Das Modell soll dabei weder eigenes medizinisches Wissen hinzufügen noch individuelle Therapieempfehlungen geben.
+
+Daraus ergeben sich zwei Forschungsfragen:
+
+\begin{description}[leftmargin=2.6em, style=sameline, font=\normalfont\bfseries]
+  \item[FF1] Wie lässt sich ein Interaktionsprüfer technisch realisieren, der amtliche Fachinformationen mit einem austauschbaren Sprachmodell zu laienverständlichen Erklärungen verarbeitet und dabei robust gegenüber dem Ausfall externer Dienste bleibt?
+  \item[FF2] Wie bewerten medizinische Laien die Verständlichkeit, das Vertrauen und die Nützlichkeit einer so erzeugten Erklärung im Vergleich zu einem etablierten Interaktionschecker?
+\end{description}
+
+\section{Aufbau der Arbeit}
+
+Kapitel~\ref{ch:sota} stellt bestehende Interaktionsdatenbanken, offene Datenquellen und den Forschungsstand zu LLMs bei Wechselwirkungen dar. Kapitel~\ref{ch:methodik} beschreibt Vorgehen, Anforderungen und Befragungsdesign. Kapitel~\ref{ch:implementierung} stellt die Implementierung vor und beantwortet FF1, Kapitel~\ref{ch:evaluation} präsentiert und diskutiert die Befragung zu FF2. Kapitel~\ref{ch:konklusion} fasst die Ergebnisse zusammen und gibt einen Ausblick.

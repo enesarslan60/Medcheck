@@ -1,0 +1,206 @@
+\chapter{Implementierung}
+\label{ch:implementierung}
+
+\section{Systemarchitektur}
+
+Medcheck folgt einer dreischichtigen Client-Server-Architektur (Abbildung~\ref{fig:architektur}). Eine Single-Page-Application auf Basis von Angular~17 kommuniziert über eine REST-Schnittstelle mit einem Backend auf Basis von Spring Boot (Java~21). Nur das Backend spricht mit externen Diensten. Dadurch bleiben API-Schlüssel außerhalb des Browsers, Ergebnisse können serverseitig zwischengespeichert werden, und Fehlerbehandlung sowie Protokollierung erfolgen an einer zentralen Stelle. Als Zwischenspeicher dient eine In-Memory-Datenbank H2.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      node distance=0.55cm and 1.1cm,
+      box/.style={draw=varB, line width=0.6pt, rounded corners=2pt, align=center,
+                  font=\small\sffamily, minimum height=0.95cm, inner sep=4pt, fill=white},
+      ext/.style={box, draw=varA, fill=codebg},
+      arr/.style={-{Stealth[length=2.2mm]}, line width=0.6pt, draw=black!70},
+      lbl/.style={font=\scriptsize\sffamily, fill=white, inner sep=1.5pt}
+    ]
+    \node[box, minimum width=2.6cm] (ui) {Browser\\Angular-SPA};
+    \node[box, right=1.9cm of ui, minimum width=3.0cm, minimum height=2.6cm] (be) {Spring-Boot-\\Backend};
+    \node[box, below=0.7cm of be, minimum width=1.8cm] (h2) {H2-Cache};
+    \node[ext, right=1.6cm of be, yshift=1.05cm, minimum width=2.9cm] (rx) {RxNorm API (NLM)};
+    \node[ext, right=1.6cm of be, minimum width=2.9cm] (fda) {openFDA Drug Label API};
+    \node[ext, right=1.6cm of be, yshift=-1.05cm, minimum width=2.9cm] (llm) {LLM-Anbieter\\{\scriptsize Claude $\mid$ Gemini $\mid$ Ollama}};
+    \draw[arr] (ui) -- node[lbl, above=1pt] {REST/JSON} (be);
+    \draw[arr] (be) -- (h2);
+    \draw[arr] (be.east |- rx) -- node[lbl, above=1pt] {Suche} (rx);
+    \draw[arr] (be.east |- fda) -- node[lbl, above=1pt] {Fachinfo} (fda);
+    \draw[arr] (be.east |- llm) -- node[lbl, above=1pt] {Prompt} (llm);
+  \end{tikzpicture}
+  \caption{Komponentenübersicht von Medcheck. Zur Laufzeit ist genau einer der drei LLM-Anbieter aktiv.}
+  \label{fig:architektur}
+\end{figure}
+
+Das Backend ist nach Verantwortlichkeiten in Pakete gegliedert: \texttt{controller}, \texttt{service}, \texttt{repository}, \texttt{model}, \texttt{dto}, \texttt{validation}, \texttt{exception} und \texttt{config}. JPA-Entitäten verlassen die Service-Schicht nie; an der REST-Grenze werden ausschließlich Data Transfer Objects ausgegeben, die als unveränderliche Java Records umgesetzt sind. Alle Abhängigkeiten werden per Konstruktor injiziert, sodass jede Klasse ohne Spring-Kontext getestet werden kann. Für den Zugriff auf externe Dienste dient der \texttt{WebClient} aus Spring WebFlux, der je Dienst eigene Timeouts und Puffergrößen erlaubt.
+
+Der zentrale Anwendungsfall ist der Aufruf \texttt{POST /api/interactions/check} mit einer Liste von Medikamentennamen und einem Sprachcode. Nach der Validierung löst der \texttt{InteractionService} jeden Namen über RxNorm auf, sucht den Interaktionstext im Cache und fragt bei einem Fehltreffer openFDA ab. Anschließend startet er die Aufrufe an das Sprachmodell parallel: einen zur Bewertung der Kombination und je Medikament einen zur Zusammenfassung der wichtigsten Warnhinweise.
+
+\section{Datenbeschaffung}
+
+\paragraph{Medikamentensuche.} Der \texttt{RxNormService} kapselt den Endpunkt \texttt{approximateTerm} mit \texttt{maxEntries=10}. Die Antwort wird zunächst in Records abgebildet, die das externe JSON-Format spiegeln, und anschließend in das eigene DTO \texttt{RxNormCandidate(rxcui, name, score, rank)} überführt. Kandidaten ohne RxCUI oder Namen werden verworfen, gleichnamige zusammengeführt. Die Trennung zwischen externem Format und eigenem DTO hält die Schnittstelle zum Frontend stabil, auch wenn die NLM ihr Antwortformat ändert.
+
+\paragraph{Abfragekaskade.} Naheliegend wäre, die über RxNorm ermittelte RxCUI direkt in openFDA zu suchen. In der Praxis ist das Feld \texttt{openfda.rxcui} jedoch nur bei einem Teil der Fachinformationen befüllt; für Ibuprofen und Warfarin liefert diese Suche keinen Treffer. Der \texttt{OpenFDAService} probiert deshalb mehrere Suchausdrücke in absteigender Spezifität, bis einer einen Text liefert (Tabelle~\ref{tab:kaskade}). Bei einwortigen Namen wird auf Anführungszeichen verzichtet, weil die exakte Phrasensuche häufig an abweichender Groß- und Kleinschreibung scheitert.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Abfragekaskade gegen openFDA am Beispiel Ibuprofen.}
+  \label{tab:kaskade}
+  \begin{tabularx}{\textwidth}{@{}c l L@{}}
+    \toprule
+    Stufe & Suchausdruck & Begründung \\
+    \midrule
+    1 & \texttt{openfda.rxcui:5640} & Eindeutiger Bezeichner, aber lückenhaft befüllt \\
+    2 & \texttt{openfda.generic\_name:ibuprofen} & Höchste Trefferquote in der Praxis \\
+    3 & \texttt{openfda.substance\_name:IBUPROFEN} & Reiner Wirkstoff, meist in Großbuchstaben gepflegt \\
+    4 & \texttt{openfda.brand\_name:IBUPROFEN} & Letzte Rückfallebene \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Filterung und Aggregation.} Ein zusätzlicher Existenzfilter (\texttt{\_exists\_}) auf das Feld \texttt{drug\_interactions} sorgt dafür, dass openFDA nur Fachinformationen mit Interaktionsabschnitt liefert. Ohne diesen Filter enthielten die Treffer zu Ibuprofen häufig rezeptfreie Packungsbeilagen ohne Abschnitt~7. Abgefragt werden bis zu 25 Fachinformationen, deren Absätze zusammengeführt werden, weil verschiedene Hersteller unterschiedliche Wechselwirkungen dokumentieren. Die Anfrage-URI wird mit \texttt{URLEncoder} einmalig kodiert und dem \texttt{WebClient} als fertiges \texttt{URI}-Objekt übergeben, da die Konstruktion über den \texttt{UriBuilder} zu doppelter Kodierung geführt hatte. Antworten mit Status~404 oder~400 werden als leeres Ergebnis gewertet und lösen die nächste Stufe der Kaskade aus.
+
+\paragraph{Duplikatbereinigung.} Die Aggregation erzeugt viele nahezu identische Absätze, die sich nur in Interpunktion, Schreibweise oder einzelnen Formulierungen unterscheiden. Medcheck verwendet daher ein Fingerprint-Verfahren (Listing~\ref{lst:dedup}): Jeder Absatz wird normalisiert (Kleinschreibung, Zusammenfassen von Leerraum und Satzzeichen), die ersten 100 Zeichen dienen als Schlüssel, und pro Schlüssel bleibt der längste Absatz erhalten. Bei Ibuprofen reduzierte das Verfahren acht Absätze auf vier inhaltlich verschiedene.
+
+\begin{lstlisting}[float=htbp, language=Java, caption={Fingerprint-basierte Duplikatbereinigung der Interaktionsabsätze.}, label={lst:dedup}]
+LinkedHashMap<String, String> byFingerprint = new LinkedHashMap<>();
+for (String para : paragraphs) {
+    String key = fingerprint(para);        // erste 100 normalisierte Zeichen
+    String existing = byFingerprint.get(key);
+    if (existing == null || para.length() > existing.length()) {
+        byFingerprint.put(key, para);      // längste Variante bleibt erhalten
+    }
+}
+\end{lstlisting}
+
+\paragraph{Caching.} Die openFDA-Abfrage ist mit bis zu vier Netzwerkaufrufen je Medikament der aufwendigste Schritt. Ihre Ergebnisse werden in der Entität \texttt{DrugInteractionText} gespeichert, mit der RxCUI (ersatzweise dem normalisierten Namen) als Schlüssel sowie kanonischem Namen, Interaktionstext, Herkunft und Abrufzeitpunkt. Da aggregierte Texte mehr als 30\,000 Zeichen umfassen können, ist das Textfeld als Large Object (\texttt{@Lob}) deklariert. Eine frühere Version speicherte Ergebnisse paarweise. Der Cache pro Medikament benötigt bei \(n\) Medikamenten höchstens \(n\) statt \(n(n-1)/2\) Einträge, und jeder Eintrag ist in beliebigen Kombinationen wiederverwendbar. Die paarweise Bewertung erfolgt ausschließlich im Sprachmodell.
+
+\section{Anbieterunabhängige LLM-Schicht}
+
+Die Anforderung NF2 ist mit dem Strategie-Entwurfsmuster umgesetzt. Das Interface \texttt{LlmProvider} (Listing~\ref{lst:provider}) definiert drei Operationen, und der \texttt{InteractionService} kennt ausschließlich dieses Interface. Die Klassen \texttt{AnthropicService}, \texttt{GeminiService} und \texttt{OllamaService} implementieren es. Über die Annotation \texttt{@ConditionalOnProperty(name = "llm.provider", ...)} wird beim Start genau eine Implementierung registriert; ein Anbieterwechsel ist damit eine reine Konfigurationsänderung. Tabelle~\ref{tab:anbieter} zeigt, wie stark sich die Anbieter im Transportformat unterscheiden. Alle drei verwenden dennoch identische Prompts und dieselbe Auswertungslogik.
+
+\begin{lstlisting}[float=htbp, language=Java, caption={Das Interface \texttt{LlmProvider}.}, label={lst:provider}]
+public interface LlmProvider {
+    boolean isConfigured();
+    LlmVerdict explainInteraction(List<String> drugNames,
+                                  List<String> drugTexts,
+                                  SupportedLanguage language);
+    String summarizeSideEffects(String drugName, String labelText,
+                                SupportedLanguage language);
+}
+\end{lstlisting}
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Vergleich der implementierten LLM-Anbieter.}
+  \label{tab:anbieter}
+  \begin{tabularx}{\textwidth}{@{}l L L L@{}}
+    \toprule
+    Merkmal & Anthropic Claude & Google Gemini & Ollama \\
+    \midrule
+    Endpunkt          & \texttt{/v1/messages} & \texttt{/v1beta/models/}\allowbreak\texttt{\{m\}:generateContent} & \texttt{/api/chat} \\
+    Authentifizierung & Header \texttt{x-api-key} & Query-Parameter \texttt{key} & keine \\
+    System-Prompt     & Feld \texttt{system} & Objekt \texttt{systemInstruction} & Nachricht mit Rolle \texttt{system} \\
+    Ausführung        & Cloud & Cloud & lokal \\
+    Timeout           & 15\,s & 15\,s & 180\,s \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Die lokale Variante über Ollama ist im medizinischen Kontext besonders interessant, weil keine Daten den Rechner verlassen. Erkauft wird dies mit deutlich längeren Antwortzeiten und einer geringeren Formattreue kleiner Modelle (Abschnitt~\ref{sec:herausforderungen}).
+
+\section{Prompt Engineering}
+
+Alle Prompts sind in der Klasse \texttt{AnthropicPrompts} gebündelt, damit sie als eigenständiges Artefakt versioniert und dokumentiert werden können. Der Entwurf folgt fünf Prinzipien. (1)~\emph{Grounding}: Das Modell darf ausschließlich den übergebenen openFDA-Text auswerten. (2)~\emph{Konservative Einstufung}: Bei mehrdeutiger Evidenz ist die höhere Stufe zu wählen, weil eine falsch-negative Einstufung in diesem Anwendungsfeld schwerer wiegt als eine falsch-positive. (3)~\emph{Strukturierte Ausgabe}: Die Bewertung wird als JSON-Objekt mit den Schlüsseln \texttt{severity} und \texttt{summary} angefordert. (4)~\emph{Englische Instruktion bei wählbarer Ausgabesprache}: Die Anweisungen sind englisch formuliert, weil Sprachmodelle englischen Instruktionen am zuverlässigsten folgen; die Zielsprache wird über den Platzhalter \texttt{\{LANGUAGE\}} eingesetzt und zweimal genannt. (5)~\emph{Verweis auf Fachpersonal}: Jede Antwort fordert zur Rücksprache mit Ärztin, Arzt oder Apotheke auf. Listing~\ref{lst:prompt} zeigt einen Auszug.
+
+\begin{lstlisting}[float=htbp, caption={Auszug aus dem System-Prompt für die Bewertung einer Kombination.}, label={lst:prompt}]
+Analyse ONLY the text provided; do not invent facts, do not consult
+external knowledge, and do not give personal medical advice.
+[...]
+  2. Write a short explanation (2-4 sentences) for a layperson.
+Rules:
+  - Answer STRICTLY in {LANGUAGE}, in plain, understandable language.
+  - Be CONSERVATIVE: if the evidence is ambiguous, err on the
+    higher severity. Never downgrade a clear warning.
+  - Always tell the reader to consult a doctor or pharmacist for
+    medical decisions.
+Output format - return ONLY one JSON object with exactly these two
+keys, no markdown fences, no comments, no extra prose:
+  { "severity": "LOW" | "MEDIUM" | "HIGH",
+    "summary": "..." }
+The value of "summary" must be written in {LANGUAGE}.
+\end{lstlisting}
+
+Ein zweiter Prompt erzeugt je Medikament eine Zusammenfassung der wichtigsten Warnhinweise in zwei bis vier Sätzen. Vor dem Aufruf wird der openFDA-Text auf 3\,000 Zeichen je Medikament gekürzt. Das senkt Kosten und Antwortzeit; das Frontend erhält weiterhin den vollständigen Text.
+
+\section{Auswertung der Modellantwort und kontrollierte Degradation}
+
+Auch bei eindeutiger Anweisung halten sich Sprachmodelle nicht immer an das geforderte Format. Typisch sind einleitende Sätze vor dem JSON-Objekt oder, bei kleinen lokalen Modellen, frei erfundene JSON-Strukturen. Die Hilfsklasse \texttt{LlmParsing} ist daher defensiv aufgebaut: Ein regulärer Ausdruck extrahiert das erste Objekt zwischen geschweiften Klammern, Jackson liest daraus die beiden Felder, und \texttt{Severity.fromString} bildet gängige Synonyme ab (etwa \texttt{MODERATE} auf \texttt{MEDIUM}). Jeder Fehler führt zum Ergebnis \texttt{UNKNOWN}. Dieser Wert ist kein Risikourteil, sondern kennzeichnet das Fehlen einer verwertbaren Einstufung und wird im Frontend bewusst nicht als geringes Risiko dargestellt.
+
+Für \(n\) Medikamente sind \(n+1\) Modellaufrufe nötig. Da sie unabhängig voneinander sind, startet der \texttt{InteractionService} sie mit \texttt{CompletableFuture} parallel und wartet auf alle Ergebnisse. Schlägt ein Aufruf fehl oder ist kein Anbieter konfiguriert, liefert der Service eine Antwort mit \texttt{severity = UNKNOWN}, ohne Zusammenfassungen und mit \texttt{llmAvailable = false}, aber mit allen bereits beschafften openFDA-Texten. Der Endpunkt antwortet in diesem Fall weiterhin mit Status~200.
+
+\section{Mehrsprachigkeit, Validierung und Fehlerbehandlung}
+
+Die Ausgabesprachen sind im Enum \texttt{SupportedLanguage} modelliert. Jeder Eintrag enthält den ISO-639-1-Code, die Eigenbezeichnung für die Oberfläche und den englischen Namen für den Prompt, beispielsweise \texttt{TURKISH("tr", "Türkçe", "Turkish")}. Hinterlegt sind Deutsch, Englisch, Spanisch, Französisch, Italienisch, Portugiesisch, Türkisch, Niederländisch, Polnisch, Russisch und Arabisch. Gegenüber einer Konfigurationsdatei bietet das Enum Typsicherheit; da der englische Name unmittelbar in den Prompt eingeht, ist er Teil der fachlichen Logik.
+
+Eingaben prüft die Klasse \texttt{DrugValidator}, bevor sie die Geschäftslogik erreichen: Namen müssen 2 bis 100 Zeichen lang sein und dürfen nur Zeichen einer Positivliste enthalten, die neben Buchstaben und Ziffern auch die in RxNorm-Bezeichnungen üblichen Klammern, Schrägstriche und Prozentzeichen umfasst. Eine Liste muss 2 bis 20 Einträge enthalten. Ein zentraler \texttt{GlobalExceptionHandler} übersetzt Ausnahmen in einheitliche Fehlerantworten: Validierungsfehler in Status~400 mit Detailliste, Fehler von RxNorm oder openFDA in Status~502 und unerwartete Fehler in Status~500 ohne interne Details.
+
+\section{Frontend}
+
+Das Frontend ist als Angular-Anwendung mit Standalone Components aufgebaut und gliedert sich in \texttt{core} (HTTP-Services), \texttt{features} (Such- und Ergebnisansicht) und \texttt{shared} (TypeScript-Interfaces, die die Backend-DTOs abbilden). Auf eine Komponentenbibliothek wurde nach einer ersten Version verzichtet; die Bedienelemente sind mit nativem HTML und eigenem CSS umgesetzt, was die Bundle-Größe reduziert und volle Kontrolle über Darstellung und Verhalten gibt.
+
+Die Suchansicht beginnt mit zwei Eingabefeldern, weitere lassen sich hinzufügen. Jedes Feld besitzt eine eigene Autovervollständigung als reaktiven RxJS-Datenstrom: Eingaben werden verzögert, erst ab drei Zeichen an das Backend gesendet, und \texttt{switchMap} verwirft veraltete Anfragen. Die Vorschlagsliste ist vollständig per Tastatur bedienbar. Darunter wählt eine Reihe von Schaltflächen die Antwortsprache, wobei jede Sprache in ihrer Eigenbezeichnung erscheint.
+
+Die Ergebnisansicht zeigt das Wichtigste ohne weitere Interaktion: eine Zusammenfassungskarte mit Ampel, textueller Risikobezeichnung und der Erklärung des Modells (Tabelle~\ref{tab:ampel}). Die Einstufung wird nie allein über Farbe vermittelt, sondern zusätzlich über die Position der Leuchte und eine Textbezeichnung. Darunter erscheint für jedes Medikament ein aufklappbares Element, in dem ein Umschalter zwischen \enquote{AI Kurzfassung} und \enquote{FDA-Original} wechselt. Im Degradationsfall zeigt die Karte den Hinweis \enquote{KI derzeit nicht verfügbar}, während die Originaltexte zugänglich bleiben.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Abbildung der Risikostufen auf die Ampeldarstellung.}
+  \label{tab:ampel}
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    Stufe & Ampel & Bezeichnung & Kartenhintergrund \\
+    \midrule
+    \texttt{HIGH}    & \riskdot{riskhigh}\ oben, rot     & Hohes Risiko     & hellrot \\
+    \texttt{MEDIUM}  & \riskdot{riskmid}\ Mitte, gelb-orange& Mittleres Risiko & hellorange \\
+    \texttt{LOW}     & \riskdot{risklow}\ unten, grün    & Niedriges Risiko & hellgrün \\
+    \texttt{UNKNOWN} & \riskoff\ alle Leuchten aus       & Risiko unbekannt & neutral grau \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Qualitätssicherung}
+
+Die Anbindung externer Dienste ist der fehleranfälligste Teil des Systems und wurde am gründlichsten getestet. Alle Service-Tests verwenden den OkHttp \texttt{MockWebServer}, einen lokal gestarteten HTTP-Server mit vorgegebenen Antworten. So lassen sich Statuscodes, Verzögerungen und fehlerhafte Modellantworten reproduzierbar prüfen, ohne Netzwerkzugriff oder API-Schlüssel. Insgesamt umfasst die Testsuite 31 Fälle: vier für RxNorm, sieben für openFDA, acht für Anthropic sowie je sechs für Gemini und Ollama. Besonderes Gewicht liegt auf den Negativfällen: Für jeden Anbieter wird geprüft, dass ein ungültiges Ausgabeformat zur Einstufung \texttt{UNKNOWN} führt und dass ein Timeout als anbieterspezifische Ausnahme erscheint, die der \texttt{InteractionService} abfangen kann.
+
+\section{Herausforderungen bei der Umsetzung}
+\label{sec:herausforderungen}
+
+Ein erheblicher Teil des Aufwands entfiel auf das Verhalten der externen Dienste im Realbetrieb. Tabelle~\ref{tab:probleme} fasst die wichtigsten Probleme zusammen. Mehrere davon traten erst mit echten Daten auf und wären mit reinen Testattrappen nicht entdeckt worden.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Aufgetretene Probleme, Ursachen und Lösungen.}
+  \label{tab:probleme}
+  \begin{tabularx}{\textwidth}{@{}L L L@{}}
+    \toprule
+    Problem & Ursache & Lösung \\
+    \midrule
+    openFDA ohne Treffer trotz vorhandener Daten & Doppelte URL-Kodierung & Explizite Kodierung, Übergabe als \texttt{URI} \\
+    Status 400 statt 404 & Eigenheit von openFDA & Beide Status als leeres Ergebnis werten \\
+    Suche über RxCUI erfolglos & Feld lückenhaft befüllt & Vierstufige Abfragekaskade \\
+    Treffer ohne Interaktionsabschnitt & Rezeptfreie Packungsbeilagen & Filter \texttt{\_exists\_} \\
+    Viele nahezu identische Absätze & Aggregation über 25 Labels & Fingerprint-Deduplizierung \\
+    Abbruch beim Lesen großer Antworten & Pufferlimit des \texttt{WebClient} & Puffer auf 16\,MB erhöht \\
+    Cache-Einträge nicht gespeichert & Spalte mit 8\,000 Zeichen zu kurz & Textfeld als \texttt{@Lob} \\
+    Cloud-Modell lehnt Anfrage ab (404, 429) & Modell abgekündigt, kein Kontingent & Modell konfigurierbar, Anbieter austauschbar \\
+    Lokales Modell überschreitet Timeout & CPU-Inferenz mit langem Kontext & Eingabekürzung, längerer Timeout, kleineres Modell \\
+    Kleines Modell erfindet eigenes JSON-Schema & Geringe Formattreue & Defensive Auswertung, Rückfall auf \texttt{UNKNOWN} \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Daraus lassen sich zwei allgemeine Erkenntnisse ableiten. Erstens ist die Dokumentation öffentlicher Schnittstellen keine vollständige Spezifikation; die Protokollierung der tatsächlich gesendeten Anfragen war der schnellste Weg zur Fehlerursache. Zweitens ist die Ausgabe eines Sprachmodells als nicht vertrauenswürdige Eingabe zu behandeln: Jede Annahme über ihr Format muss abgesichert sein, und ein Formatfehler darf nie die gesamte Anfrage scheitern lassen.

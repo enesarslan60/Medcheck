@@ -1,0 +1,72 @@
+\chapter{Methodik}
+\label{ch:methodik}
+
+\section{Vorgehensmodell}
+
+Die Arbeit folgt einem gestaltungsorientierten Vorgehen in zwei Phasen. In der ersten Phase wurde ein Prototyp iterativ entwickelt: Jede Iteration umfasste die Umsetzung einer Teilfunktion, den Test gegen die realen Schnittstellen von RxNorm, openFDA und der LLM-Anbieter sowie die Korrektur der aufgetretenen Abweichungen. Dies war notwendig, weil sich das Verhalten der externen Schnittstellen in mehreren Punkten von ihrer Dokumentation unterschied (Abschnitt~\ref{sec:herausforderungen}). In der zweiten Phase wurde eine vom Prototyp erzeugte Erklärung in einer Befragung mit medizinischen Laien mit einem etablierten Interaktionschecker verglichen.
+
+\section{Anforderungen}
+
+Aus Problemstellung und Forschungsstand wurden die Anforderungen in Tabelle~\ref{tab:anforderungen} abgeleitet. Die nichtfunktionalen Anforderungen NF1 bis NF3 adressieren unmittelbar die in Kapitel~\ref{ch:sota} beschriebenen Schwächen: die Abhängigkeit von Drittanbietern, die schnelle Weiterentwicklung des LLM-Marktes und die geringe Spezifität frei antwortender Modelle.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Funktionale (F) und nichtfunktionale (NF) Anforderungen an den Prototyp.}
+  \label{tab:anforderungen}
+  \begin{tabularx}{\textwidth}{@{}l L L@{}}
+    \toprule
+    ID & Anforderung & Umsetzung \\
+    \midrule
+    F1  & Tippfehlertolerante Suche nach Medikamenten & RxNorm-Suche, Autovervollständigung \\
+    F2  & Prüfung von zwei bis zwanzig Medikamenten & Dynamische Eingabefelder, Validierung \\
+    F3  & Dreistufige Risikoeinstufung & LLM-Klassifikation, Ampel \\
+    F4  & Laienverständliche Erklärung, wählbare Sprache & Parametrisierte Prompts, elf Sprachen \\
+    F5  & Einsicht in den unveränderten Originaltext & Umschaltbare Ansicht \enquote{FDA-Original} \\
+    NF1 & Robustheit bei Ausfall externer Dienste & Kontrollierte Degradation, Timeouts \\
+    NF2 & Austauschbarkeit des LLM-Anbieters & Interface \texttt{LlmProvider}, Konfiguration \\
+    NF3 & Nachvollziehbarkeit der Aussagen & Grounding auf openFDA-Text \\
+    NF4 & Geringe Betriebskosten & Caching, gekürzte Eingabe, lokales Modell \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{Entwurfsprinzipien}
+
+Drei Prinzipien leiten den Systementwurf. \emph{Grounding}: Das Sprachmodell erhält den amtlichen Text als einzige Wissensgrundlage und wird angewiesen, nichts hinzuzufügen. Damit wird die von Mohammed et al.\ beschriebene Überschätzung von Wechselwirkungen durch frei antwortende Modelle~\cite{MOHAMMED2026100733} strukturell begrenzt. \emph{Anbieterunabhängigkeit}: Die LLM-Schicht ist hinter einer Schnittstelle gekapselt, sodass Modelle und Anbieter ohne Codeänderung austauschbar sind. \emph{Kontrollierte Degradation}: Fällt ein externer Dienst aus, liefert das System die verfügbaren Informationen aus, statt abzubrechen; insbesondere bleibt der amtliche Text sichtbar, wenn das Sprachmodell nicht antwortet.
+
+\section{Design der Nutzerbefragung}
+\label{sec:befragungsdesign}
+
+\paragraph{Untersuchungsgegenstand.} Verglichen wurden zwei Erklärungen zur Kombination von Warfarin und Ibuprofen. \emph{Variante~A} ist der Erklärungstext des Interaktionscheckers von Drugs.com~\cite{DrugsCom2025}. Er beschreibt das Blutungsrisiko, empfiehlt Rücksprache mit dem Arzt, erwähnt mögliche Alternativen, Dosisanpassung und INR-Kontrolle und zählt konkrete Warnzeichen einer Blutung auf, etwa Schwindel, teerartigen Stuhl oder kaffeesatzartiges Erbrechen. Für Teilnehmende mit Schwierigkeiten im Englischen lag eine maschinell (mit Claude) erstellte deutsche Übersetzung vor. \emph{Variante~B} ist die von Medcheck erzeugte Zusammenfassung in zwei bis drei Sätzen. Sie benennt das erhöhte Blutungsrisiko und den synergistischen Mechanismus und fordert zu ärztlicher Rücksprache und Überwachung auf. Ihre englische und deutsche Fassung wurden über die Spracheinstellung des Prototyps erzeugt.
+
+\paragraph{Ablauf.} Die Befragung folgte einem Within-Subject-Design: Jede Person las und bewertete beide Varianten, wobei die Reihenfolge zwischen den Personen variiert wurde. Teil~0 erfasste Altersgruppe, Einverständnis, regelmäßige Medikamenteneinnahme, bisherige Online-Recherche und die Sicherheit im Umgang mit medizinischen Informationen. In Teil~1 und~2 wurden die Varianten A und B anhand derselben acht Aussagen bewertet. Teil~3 verglich beide Varianten direkt in vier Fragen (verständlicher, vertrauenswürdiger, hilfreicher für eine Entscheidung, eher weiterzuempfehlen) mit offener Begründung. Teil~4 war ein Verständnistest mit zwei offenen Fragen: was als Nächstes zu tun sei und wie gefährlich die Kombination sei. Teil~5 enthielt offene Fragen zu Gefallen, Störendem, fehlenden Informationen und möglichen Nutzungssituationen.
+
+\paragraph{Messinstrument.} Die acht Aussagen aus Teil~1 und~2 wurden auf einer fünfstufigen Likert-Skala von 1 (\enquote{trifft gar nicht zu}) bis 5 (\enquote{trifft voll zu}) bewertet und drei Dimensionen zugeordnet (Tabelle~\ref{tab:items}). Die negativ formulierte Aussage V3 wurde für Dimensions- und Gesamtwerte umkodiert (\(x' = 6 - x\)).
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Bewertungsaussagen der Teile~1 und~2.}
+  \label{tab:items}
+  \begin{tabularx}{\textwidth}{@{}l l L@{}}
+    \toprule
+    Dimension & Kürzel & Aussage \\
+    \midrule
+    \multirow{3}{*}{Verständlichkeit} & V1 & Die Erklärung war für mich leicht zu verstehen. \\
+                                      & V2 & Die verwendeten Begriffe waren mir klar. \\
+                                      & V3 & Ich musste Teile mehrfach lesen, um sie zu verstehen. (negativ) \\
+    \midrule
+    \multirow{2}{*}{Vertrauen}        & T1 & Ich vertraue der Richtigkeit dieser Information. \\
+                                      & T2 & Die Erklärung wirkte seriös und glaubwürdig. \\
+    \midrule
+    \multirow{3}{*}{Nützlichkeit}     & N1 & Die Erklärung half mir, das Risiko einzuschätzen. \\
+                                      & N2 & Nach dem Lesen weiß ich, was ich als Nächstes tun sollte. \\
+                                      & N3 & Die Erklärung enthielt alle Informationen, die ich brauchte. \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\paragraph{Durchführung und Stichprobe.} Die Befragung fand zwischen dem 18.~August und dem 10.~September 2026 statt. Teilgenommen haben elf Personen, die über das persönliche Umfeld gewonnen wurden (Gelegenheitsstichprobe). Alle Personen willigten in die Aufzeichnung der Daten für diese Arbeit ein. Ein Teil der Befragungen wurde mündlich geführt und transkribiert.\IfFileExists{kapitel/anhang-umfrage.tex}{ Die Rohdaten und Transkripte sind im Anhang dokumentiert.}{}
+
+\paragraph{Auswertung.} Je Aussage und Variante werden Mittelwert, Standardabweichung und Median berichtet. Dimensions- und Gesamtwerte werden paarweise mit dem exakten Wilcoxon-Vorzeichen-Rang-Test verglichen, der für kleine Stichproben und ordinalskalierte Daten geeignet ist; Personen mit identischem Wert in beiden Varianten gehen nicht in den Test ein. Als Effektstärke wird die Rang-biseriale Korrelation \(r = (W^{+} - W^{-})/(W^{+} + W^{-})\) angegeben, wobei \(W^{+}\) und \(W^{-}\) die Rangsummen der Differenzen zugunsten von B bzw.\ A bezeichnen. Die Präferenzen aus dem direkten Vergleich werden mit einem zweiseitigen Binomialtest gegen die Gleichverteilung geprüft. Das Signifikanzniveau beträgt \(\alpha = 0{,}05\). Die offenen Antworten und Transkripte werden inhaltlich zu Themen zusammengefasst.

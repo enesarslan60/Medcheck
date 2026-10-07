@@ -1,0 +1,26 @@
+\chapter{Konklusion}
+\label{ch:konklusion}
+
+\section{Zusammenfassung}
+
+Diese Arbeit hat mit Medcheck einen Prototyp entwickelt und evaluiert, der amtliche Fachinformationen zu Arzneimittelwechselwirkungen mithilfe eines Sprachmodells für medizinische Laien aufbereitet. Ausgangspunkt war die Beobachtung, dass verlässliche Informationen zwar frei verfügbar, aber schwer verständlich sind, während frei antwortende Sprachmodelle zwar verständlich formulieren, Wechselwirkungen aber mit unzureichender Spezifität erkennen~\cite{MOHAMMED2026100733}. Medcheck verbindet beide Seiten, indem das Sprachmodell ausschließlich den amtlichen Text erklärt und selbst nicht als Wissensquelle dient.
+
+\section{Beantwortung der Forschungsfragen}
+
+\paragraph{FF1.} Die technische Realisierung gelingt mit einer Architektur, die Datenbeschaffung und Sprachverarbeitung strikt trennt. RxNorm normalisiert die Eingaben, openFDA liefert den Interaktionsabschnitt der Fachinformation, und ein Sprachmodell überführt ihn in eine Risikoeinstufung und eine Erklärung in einer von elf Sprachen. Drei Entwurfsentscheidungen erwiesen sich als tragend. Erstens kapselt das Interface \texttt{LlmProvider} die Anbieter, sodass Claude, Gemini und ein lokales Modell ohne Codeänderung austauschbar sind. Zweitens wird die Modellausgabe als nicht vertrauenswürdige Eingabe behandelt und bei Formatfehlern auf \texttt{UNKNOWN} zurückgeführt. Drittens bleibt durch die kontrollierte Degradation der amtliche Text auch dann verfügbar, wenn das Modell ausfällt. Der größte Aufwand lag dabei nicht im Sprachmodell, sondern in der robusten Anbindung der öffentlichen Datenquellen.
+
+\paragraph{FF2.} Medizinische Laien bewerteten die von Medcheck erzeugte Erklärung im Mittel als verständlicher als den Text von Drugs.com (4{,}30 gegenüber 3{,}64), und acht von elf Personen fanden sie im direkten Vergleich verständlicher. Beim Vertrauen lagen beide Varianten nahezu gleichauf, bei der Nützlichkeit leicht zugunsten von Medcheck. Die Unterschiede sind bei elf Personen nicht signifikant und werden von einem möglichen Reihenfolgeeffekt überlagert. Inhaltlich zeigt sich ein Zielkonflikt: Die Kürze, die die Verständlichkeit erhöht, geht zulasten von Details wie konkreten Warnzeichen, die für Vertrauen und Risikoeinschätzung wichtig sind.
+
+\section{Ausblick}
+
+Aus den Ergebnissen ergeben sich folgende Ansatzpunkte für die Weiterentwicklung:
+
+\begin{itemize}
+  \item \textbf{Breitere Datengrundlage.} Neben dem Interaktionsabschnitt sollten die Warnhinweise und die Hinweise zur Patientenberatung der Fachinformation einbezogen werden. Die Zusammenfassung könnte dann konkrete Warnzeichen nennen, ohne das Grounding aufzugeben. Zudem sollte der Prompt verlangen, die Wirkrichtung eines Mechanismus ausdrücklich zu benennen.
+  \item \textbf{Validierung der Einstufung.} Die Risikoeinstufung sollte wie bei Mohammed et al.~\cite{MOHAMMED2026100733} gegen einen Referenzstandard wie Lexicomp geprüft werden. Harmlose Kombinationen sollten dabei einbezogen werden, um die Spezifität der konservativen Regel zu bestimmen.
+  \item \textbf{Zuordnung über Substanzkennungen.} Statt der namensbasierten Abfragekaskade könnte die Zuordnung zwischen RxNorm und openFDA über eindeutige Substanzkennungen wie den UNII-Code erfolgen.
+  \item \textbf{Robustheit und Betrieb.} Wiederholungsversuche mit exponentiellem Backoff, automatisierte Tests der Degradation im \texttt{InteractionService}, Messungen der Antwortzeiten und eine persistente Datenbank mit Ablaufdatum für Cache-Einträge würden den Prototyp näher an einen produktiven Einsatz bringen.
+  \item \textbf{Größere Studie.} Eine Folgestudie sollte die Reihenfolge ausbalancieren, ältere Menschen mit Polypharmazie einbeziehen, mehrere Arzneimittelpaare und Anbieter vergleichen und die vollständige Oberfläche einschließlich Ampel und Detailansicht bewerten.
+\end{itemize}
+
+Medcheck zeigt, dass ein Sprachmodell als Erklärschicht über amtlichen Daten Laien einen Mehrwert bieten kann, ohne selbst zur Wissensquelle zu werden. Die Ergebnisse legen nahe, dass die entscheidende Frage dabei weniger die Wahl des Modells ist als die Gestaltung der Information: welche Quelle zugrunde liegt, wie viel Detail gezeigt wird und wie deutlich das Risiko kommuniziert wird.

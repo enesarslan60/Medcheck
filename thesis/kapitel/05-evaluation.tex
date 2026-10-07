@@ -1,0 +1,221 @@
+\chapter{Evaluation}
+\label{ch:evaluation}
+
+Dieses Kapitel beantwortet FF2 anhand der in Abschnitt~\ref{sec:befragungsdesign} beschriebenen Befragung. Ergänzend wird der Prototyp gegen die Anforderungen aus Kapitel~\ref{ch:methodik} bewertet.
+
+\section{Stichprobe}
+
+An der Befragung nahmen elf Personen teil, die im Folgenden in der Reihenfolge der Befragung als K1 bis K11 bezeichnet werden. Acht Personen gehören der Altersgruppe 18 bis 29 Jahre an, zwei der Gruppe 45 bis 59 Jahre und eine der Gruppe 16 bis 18 Jahre. Nur zwei Personen nehmen regelmäßig Medikamente ein, sechs haben bereits online nach Medikamenteninformationen gesucht. Ihre Sicherheit im Umgang mit medizinischen Informationen schätzten die Teilnehmenden im Mittel mit 3{,}55 ein (Median~3). Variante~A wurde acht Personen zuerst gezeigt, Variante~B drei Personen.
+
+\section{Bewertung der Aussagen}
+
+Tabelle~\ref{tab:itemergebnisse} zeigt die Bewertungen der acht Aussagen. Unter Berücksichtigung der negativ formulierten Aussage V3 schneidet Variante~B bei sieben von acht Aussagen besser ab. Am deutlichsten sind die Unterschiede bei der Verständlichkeit: B wurde als leichter verständlich (V1) und begrifflich klarer (V2) bewertet und musste seltener mehrfach gelesen werden (V3). Ebenfalls deutlich ist der Unterschied bei N2: Nach dem Lesen von B wussten die Teilnehmenden besser, was als Nächstes zu tun ist. Bei den Vertrauensaussagen T1 und T2 liegen beide Varianten nahe beieinander. Die einzige Aussage, bei der A besser abschneidet, ist N1: Variante~A half etwas mehr, das Risiko einzuschätzen.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Mittelwert (M), Standardabweichung (SD) und Median (Md) je Aussage auf der Skala von 1 bis 5. Bei V3 ist ein niedriger Wert positiv.}
+  \label{tab:itemergebnisse}
+  \begin{tabular}{@{}llcccc@{}}
+    \toprule
+    & & \multicolumn{2}{c}{Variante A} & \multicolumn{2}{c}{Variante B} \\
+    \cmidrule(lr){3-4}\cmidrule(l){5-6}
+    Kürzel & Aussage (Kurzform) & M (SD) & Md & M (SD) & Md \\
+    \midrule
+    V1 & leicht zu verstehen          & 3{,}73 (1{,}19) & 4 & 4{,}45 (0{,}93) & 5 \\
+    V2 & Begriffe klar                & 3{,}73 (1{,}01) & 4 & 4{,}36 (0{,}92) & 5 \\
+    V3 & mehrfach lesen (negativ)     & 2{,}55 (1{,}21) & 2 & 1{,}91 (1{,}22) & 1 \\
+    T1 & vertraue der Richtigkeit     & 3{,}91 (1{,}14) & 4 & 4{,}09 (1{,}04) & 4 \\
+    T2 & seriös und glaubwürdig       & 4{,}09 (1{,}04) & 4 & 4{,}27 (1{,}01) & 5 \\
+    N1 & Risiko einschätzen           & 4{,}18 (1{,}25) & 5 & 4{,}09 (1{,}04) & 4 \\
+    N2 & weiß, was zu tun ist         & 3{,}82 (1{,}25) & 4 & 4{,}36 (1{,}03) & 5 \\
+    N3 & alle Informationen enthalten & 3{,}73 (1{,}35) & 4 & 4{,}00 (1{,}26) & 4 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Abbildung~\ref{fig:dimensionen} fasst die Aussagen zu den drei Dimensionen und einem Gesamtwert zusammen. Variante~B liegt in allen Dimensionen vorn, am deutlichsten bei der Verständlichkeit (4{,}30 gegenüber 3{,}64). Tabelle~\ref{tab:wilcoxon} zeigt die Ergebnisse des Wilcoxon-Vorzeichen-Rang-Tests. Keiner der Unterschiede ist auf dem Niveau \(\alpha = 0{,}05\) signifikant. Die Effektstärke liegt für Verständlichkeit (\(r = 0{,}47\)) und Gesamtwert (\(r = 0{,}40\)) im mittleren Bereich, für Vertrauen und Nützlichkeit im kleinen Bereich. Bei elf Personen lässt sich ein Effekt dieser Größe statistisch nicht absichern. Die Ergebnisse sind daher als Hinweise zu verstehen, nicht als Nachweis.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+        ybar, bar width=17pt,
+        width=0.86\textwidth, height=4.8cm,
+        ymin=1, ymax=5.3, ytick={1,2,3,4,5},
+        ylabel={Mittelwert (1--5)}, ylabel style={font=\small},
+        xtick={1,2,3,4}, xmin=0.5, xmax=4.5,
+        xticklabels={Verständlichkeit, Vertrauen, Nützlichkeit, Gesamt},
+        tick label style={font=\small}, xtick style={draw=none},
+        ymajorgrids, grid style={black!12}, axis lines*=left,
+        yticklabel={\pgfmathprintnumber[use comma,fixed,precision=0]{\tick}},
+        nodes near coords={\pgfmathprintnumber[use comma,fixed,fixed zerofill,precision=2]{\pgfplotspointmeta}},
+        every node near coord/.append style={font=\scriptsize},
+        legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, draw=none, font=\small,
+                      /tikz/every even column/.append style={column sep=1.2em}},
+        area legend
+      ]
+      \addplot[fill=varA, draw=none] coordinates {(1,3.64) (2,4.00) (3,3.91) (4,3.83)};
+      \addplot[fill=varB, draw=none] coordinates {(1,4.30) (2,4.18) (3,4.15) (4,4.22)};
+      \legend{Variante A (Drugs.com), Variante B (Medcheck)}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Mittelwerte der Dimensionen und des Gesamtwerts. V3 ist umkodiert.}
+  \label{fig:dimensionen}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Wilcoxon-Vorzeichen-Rang-Test (exakt, zweiseitig). \(n\): Personen mit von null verschiedener Differenz; \(W^{+}\), \(W^{-}\): Rangsummen der Differenzen zugunsten von B bzw.\ A; \(r\): Rang-biseriale Korrelation.}
+  \label{tab:wilcoxon}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    Dimension & A: M (SD) & B: M (SD) & \(n\) & \(W^{+}\) / \(W^{-}\) & \(p\) & \(r\) \\
+    \midrule
+    Verständlichkeit & 3{,}64 (0{,}94) & 4{,}30 (0{,}85) & 10 & 40{,}5 / 14{,}5 & 0{,}203 & 0{,}47 \\
+    Vertrauen        & 4{,}00 (1{,}00) & 4{,}18 (1{,}01) & 7  & 18{,}0 / 10{,}0 & 0{,}531 & 0{,}29 \\
+    Nützlichkeit     & 3{,}91 (1{,}16) & 4{,}15 (1{,}07) & 11 & 40{,}5 / 25{,}5 & 0{,}526 & 0{,}23 \\
+    Gesamt           & 3{,}83 (0{,}86) & 4{,}22 (0{,}86) & 10 & 38{,}5 / 16{,}5 & 0{,}287 & 0{,}40 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Die Mittelwerte verdecken eine große Streuung zwischen den Personen (Abbildung~\ref{fig:differenzen}). Sieben Personen bewerteten B im Gesamtwert besser, drei schlechter und eine gleich. Die Differenzen reichen von rund \(-2{,}1\) Punkten (K3) bis \(+1{,}9\) Punkten (K5).
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+        ybar, bar width=13pt, bar shift=0pt,
+        width=0.86\textwidth, height=4.5cm,
+        ymin=-3.0, ymax=2.6, ytick={-2,-1,0,1,2},
+        ylabel={Differenz B $-$ A}, ylabel style={font=\small},
+        xtick={1,...,11}, xmin=0.4, xmax=11.6,
+        xticklabels={K1,K2,K3,K4,K5,K6,K7,K8,K9,K10,K11},
+        tick label style={font=\small}, xtick style={draw=none},
+        ymajorgrids, grid style={black!12}, axis lines*=left,
+        extra y ticks={0}, extra y tick labels={},
+        extra y tick style={grid style={black!60, line width=0.5pt}},
+        yticklabel={\pgfmathprintnumber[use comma,fixed,precision=0]{\tick}},
+        nodes near coords={\pgfmathprintnumber[use comma,fixed,fixed zerofill,precision=1]{\pgfplotspointmeta}},
+        every node near coord/.append style={font=\scriptsize},
+        legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, draw=none, font=\small,
+                      /tikz/every even column/.append style={column sep=1.2em}},
+        area legend
+      ]
+      \addplot[fill=orderA, draw=none] coordinates
+        {(1,1.5) (3,-2.125) (5,1.875) (7,1.625) (8,0.125) (9,0.75) (10,0.375) (11,1.125)};
+      \addplot[fill=orderB, draw=none] coordinates {(2,-0.875) (4,0) (6,-0.125)};
+      \legend{Variante A zuerst gelesen, Variante B zuerst gelesen}
+    \end{axis}
+  \end{tikzpicture}
+  \caption{Differenz der Gesamtwerte (B $-$ A) je Person. Positive Werte bedeuten eine bessere Bewertung von Variante~B.}
+  \label{fig:differenzen}
+\end{figure}
+
+\section{Direkter Vergleich und Reihenfolgeeffekt}
+
+Im direkten Vergleich fanden acht von elf Personen Variante~B verständlicher (Tabelle~\ref{tab:vergleich}). Beim Vertrauen kehrt sich das Bild knapp um: Sechs Personen würden eher Variante~A vertrauen. Acht Personen entschieden sich in allen vier Fragen für dieselbe Variante, fünf für B und drei für A. Die übrigen drei (K7, K8, K10) fanden B verständlicher, würden aber eher A vertrauen. Verständlichkeit und Vertrauen fallen also bei einem Teil der Personen auseinander. Keine der Präferenzen weicht signifikant von einer Gleichverteilung ab.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Präferenzen im direkten Vergleich mit zweiseitigem Binomialtest gegen \(p_0 = 0{,}5\).}
+  \label{tab:vergleich}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    Frage & A & B & \(p\) \\
+    \midrule
+    Welche Erklärung fanden Sie verständlicher?                  & 3 & 8 & 0{,}227 \\
+    Welcher Erklärung würden Sie eher vertrauen?                 & 6 & 5 & 1{,}000 \\
+    Welche half Ihnen mehr, eine Entscheidung zu treffen?        & 4 & 7 & 0{,}549 \\
+    Welche würden Sie einem Freund/Familienmitglied empfehlen?   & 4 & 7 & 0{,}549 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Da die Reihenfolge mit 8:3 nicht ausbalanciert war, ist ein möglicher Reihenfolgeeffekt gesondert zu betrachten. Acht von elf Personen empfahlen die Variante, die sie als zweite gelesen hatten (\(p = 0{,}227\)). In der Gruppe, die A zuerst las, bewerteten sieben von acht Personen B im Gesamtwert besser, im Mittel um 0{,}66 Punkte. Sechs von ihnen empfahlen B. In der Gruppe, die B zuerst las, bewertete keine Person B besser, im Mittel lag B um 0{,}33 Punkte darunter, und zwei der drei Personen empfahlen A. Mit drei Personen ist diese Gruppe zu klein für belastbare Aussagen. Das Muster ist jedoch mit einer inhaltlichen Erklärung vereinbar: Wer A zuerst gelesen hat, kennt die Details bereits und erlebt B als klare Zusammenfassung. Wer mit B beginnt, vermisst die Details und findet sie anschließend in A.
+
+\section{Verständnistest und offene Antworten}
+
+Die offenen Fragen des Verständnistests zeigen, welche Botschaft bei den Lesenden ankam. Offensichtliche Tippfehler in den folgenden Zitaten wurden korrigiert. Als nächsten Schritt nannten acht Personen die Rücksprache mit Ärztin, Arzt oder Apotheke (K1, K2, K4, K5, K6, K7, K10, K11). K1 und K4 entnahmen Variante~B zudem ausdrücklich, die Medikamente nicht zu kombinieren. Variante~A hinterließ dagegen bei einigen Personen Unsicherheit. K1 antwortete \enquote{Ich weiß es nicht wirklich, zum Arzt?}, und K9 empfand die Formulierung \enquote{may increase} als unklar. K4 entnahm A die Möglichkeit, nach ärztlicher Rücksprache die Dosierung anzupassen, und schätzte die Kombination danach als \enquote{nicht so schlimm} ein, nach B dagegen als \enquote{wahrscheinlich schlimm}.
+
+Bei der Einschätzung der Gefahr ergibt sich ein gemischtes Bild. K1, K4, K5 und K9 leiteten aus Variante~B eine klarere oder höhere Gefahr ab. K9 schrieb, die deutliche Sprache halte von einer Kombination ab (\enquote{strong language pushes me away from it}). Umgekehrt begründeten K2, K3 und K6 ihre Einschätzung mit Details, die nur Variante~A enthält, nämlich den beschriebenen Symptomen und dem Hinweis auf den Magen-Darm-Trakt. K2 sagte zu Variante~B: \enquote{Da würde ich mir jetzt keine Gedanken machen}, weil der Text nicht vermittle, dass die Kombination richtig gefährlich sei.
+
+Auffällig ist die Begründung von K7, die Kombination sei \enquote{sehr gefährlich, da beide Wirkstoffe zur Blutgerinnung führen können}. Tatsächlich beeinträchtigen beide Wirkstoffe die Blutstillung, Warfarin über die Gerinnungsfaktoren und Ibuprofen über die Funktion der Blutplättchen. Variante~B formuliert lediglich, dass beide die Blutgerinnung \enquote{beeinflussen}, und lässt die Wirkrichtung damit offen. Die Antworten von K8 zur ersten Frage sind nicht auswertbar, weil die Frage als Bitte um Verbesserungsvorschläge verstanden wurde. Bei K11 sind die Bezeichnungen A und B in Teil~4 und~5 offensichtlich vertauscht, denn die zitierten Formulierungen stammen jeweils aus der anderen Variante. Diese Antworten wurden mit getauschten Bezeichnungen ausgewertet.
+
+Die Antworten auf die offenen Fragen aus Teil~5 und die Begründungen im direkten Vergleich lassen sich zu vier Themen zusammenfassen (Tabelle~\ref{tab:themen}). Die Themen sind nicht widersprüchlich, sondern beschreiben einen Zielkonflikt: Dieselbe Kürze, die B verständlich macht, führt dazu, dass Details fehlen. Mehrere Personen nannten beide Seiten. So beschrieb K9 Variante~B als \enquote{short and very clear}, vermisste darin aber die bei A genannten Symptome.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Themen der offenen Antworten.}
+  \label{tab:themen}
+  \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.1cm} >{\raggedright\arraybackslash}p{2.6cm} L@{}}
+    \toprule
+    Thema & Personen & Beispiel \\
+    \midrule
+    B ist kurz, klar und ohne Fachbegriffe & K1, K4, K5, K7, K9, K10, K11 & \enquote{Es war kurz und knapp und die Infos wurden übermittelt.} (K5) \\
+    B fehlen Details und konkrete Warnzeichen & K2, K3, K6, K8, K9, K11 & \enquote{Es war sehr komprimiert, aber sehr oberflächlich erklärt.} (K3) \\
+    A ist zu lang oder zu fachsprachlich & K1, K4, K5, K8, K9, K10 & \enquote{Mit jedem zusätzlichen Satz hatte ich mehr Fragen als eine Erklärung.} (K5) \\
+    Details schaffen Vertrauen und Risikobewusstsein & K2, K3, K6, K8, K11 & \enquote{Variant A is more complicated to understand but it makes the product more trustworthy.} (K8) \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Als mögliche Nutzungssituationen nannten die Teilnehmenden das Kombinieren von Medikamenten zu Hause (K1, K2), die Einnahme von Schmerzmitteln zusammen mit anderen Medikamenten (K7), die Vorbereitung eines Apothekenbesuchs (K8), Nahrungsergänzungsmittel (K9), die Einnahme von mehr als zwei Medikamenten (K10) und die Prüfung eines ärztlichen Rezepts (K11). K9 würde das Werkzeug auch den eigenen Eltern anstelle des Beipackzettels empfehlen. K3 machte die Nutzung davon abhängig, ob das Werkzeug vertrauenswürdig ist. K4 wurde zusätzlich die Oberfläche des Prototyps gezeigt. Zur Ampel äußerte K4: \enquote{Das macht es auf jeden Fall einfacher. Vor allem für Menschen, die sich nicht so gut auskennen.}
+
+\section{Diskussion}
+
+\paragraph{Verständlichkeit.} Die Ergebnisse deuten darauf hin, dass Medcheck das Ziel einer laienverständlichen Erklärung erreicht. Der Vorteil von Variante~B zeigt sich in allen drei Verständlichkeitsaussagen, im direkten Vergleich und in den offenen Antworten. Das stützt die Einschätzung von Mohammed et al., dass LLMs als ergänzende Erklärwerkzeuge dienen können~\cite{MOHAMMED2026100733}, ebenso den Ansatz von Almeida et al., Arzneimittelinformationen mit generativer KI für Patientinnen und Patienten aufzubereiten~\cite{Almeida2025}. Statistisch abgesichert ist dieser Vorteil bei der vorliegenden Stichprobe allerdings nicht.
+
+\paragraph{Vertrauen.} Beim Vertrauen erreicht die kurze Erklärung nicht mehr als der etablierte Text. Mehrere Teilnehmende verbanden Vertrauen mit Ausführlichkeit, am deutlichsten K8. Zu berücksichtigen ist, dass in der Befragung nur der Text gezeigt wurde. Dass Variante~B auf der amtlichen Fachinformation beruht und diese in der Anwendung mit einem Klick einsehbar ist, war für die Teilnehmenden nicht erkennbar.
+
+\paragraph{Fehlende Warnzeichen als Folge des Groundings.} Der häufigste Kritikpunkt, die fehlenden Warnzeichen, ist eine direkte Folge des Entwurfs. Medcheck wertet nur den Interaktionsabschnitt der Fachinformation aus, und das Modell ist angewiesen, nichts hinzuzufügen. Warnzeichen einer Blutung stehen in Fachinformationen jedoch in der Regel nicht im Interaktionsabschnitt, sondern bei den Warnhinweisen und in den Hinweisen zur Patientenberatung. Variante~A ist dagegen ein für Patientinnen und Patienten verfasster Text, der diese Warnzeichen ausdrücklich nennt. Das Grounding verhindert also erfundene Inhalte, begrenzt die Antwort aber auf das, was der ausgewertete Abschnitt enthält. Die Lösung liegt daher nicht in einem freieren Prompt, sondern in einer breiteren Datengrundlage.
+
+\paragraph{Deutlichkeit der Warnung.} Die deutliche Formulierung von Variante~B wurde von mehreren Personen als klare Warnung verstanden (K1, K4, K5, K9). Die vorsichtigere Formulierung von Variante~A (\enquote{may increase}) hinterließ zusammen mit den genannten Handlungsoptionen bei einigen Personen den Eindruck eines beherrschbaren Risikos. Für eine Kombination mit bekanntermaßen erhöhtem Blutungsrisiko ist die Wirkung von B erwünscht. Die Literatur zur Alert Fatigue zeigt jedoch, dass zu viele oder zu drastische Warnungen die Akzeptanz untergraben~\cite{VillaZapata}, und frei antwortende Modelle neigen zur Überschätzung von Wechselwirkungen~\cite{MOHAMMED2026100733}. Ob die konservative Einstufungsregel des Prompts bei harmlosen Kombinationen zu unnötigen Warnungen führt, wurde in dieser Arbeit nicht untersucht.
+
+\paragraph{Geschichtete Darstellung.} Insgesamt haben die beiden Varianten komplementäre Stärken. B ist verständlicher und gibt eine klare Handlungsrichtung vor. A vermittelt durch Details und Warnzeichen Vertrauen und erleichtert die Einschätzung des Risikos. Der beobachtete Reihenfolgeeffekt weist in dieselbe Richtung, denn B wurde vor allem dann besser bewertet, wenn die Details aus A bereits bekannt waren. Dies spricht für eine geschichtete Darstellung: Zuerst erscheint die kurze Zusammenfassung, Warnzeichen und Originaltext sind unmittelbar darunter verfügbar. Die Oberfläche von Medcheck ist bereits so aufgebaut, bewertet wurde in der Befragung jedoch nur der Text der Zusammenfassung.
+
+\section{Technische Bewertung}
+
+Tabelle~\ref{tab:erfuellung} bewertet den Prototyp gegen die Anforderungen aus Tabelle~\ref{tab:anforderungen}. Alle funktionalen Anforderungen sind umgesetzt. Bei den nichtfunktionalen Anforderungen bestehen zwei Einschränkungen: Die kontrollierte Degradation ist auf Ebene der einzelnen Anbieter automatisiert getestet, im \texttt{InteractionService} jedoch nicht. Das Grounding ist im Prompt vorgegeben, seine Einhaltung wurde aber nicht systematisch geprüft.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Erfüllung der Anforderungen.}
+  \label{tab:erfuellung}
+  \begin{tabularx}{\textwidth}{@{}l l L@{}}
+    \toprule
+    ID & Status & Nachweis \\
+    \midrule
+    F1  & erfüllt    & RxNorm-Anbindung mit Autovervollständigung, vier Tests \\
+    F2  & erfüllt    & Dynamische Eingabefelder, \texttt{DrugValidator} mit 2 bis 20 Einträgen \\
+    F3  & erfüllt    & Klassifikation \texttt{LOW}/\texttt{MEDIUM}/\texttt{HIGH}, Ampel, \texttt{UNKNOWN} bei Formatfehlern \\
+    F4  & erfüllt    & Elf Ausgabesprachen über \texttt{SupportedLanguage} \\
+    F5  & erfüllt    & Umschaltbare Ansicht \enquote{FDA-Original} \\
+    NF1 & weitgehend & Timeouts und Formatfehler je Anbieter getestet; Degradation im \texttt{InteractionService} nicht automatisiert getestet \\
+    NF2 & erfüllt    & Drei Anbieter, Wechsel über \texttt{llm.provider} ohne Codeänderung \\
+    NF3 & teilweise  & Grounding im Prompt vorgegeben; Einhaltung nicht systematisch geprüft \\
+    NF4 & erfüllt    & Cache pro Medikament, Kürzung der Modelleingabe, lokales Modell möglich \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Systematische Messungen zu Antwortzeiten und Formattreue der Anbieter wurden nicht durchgeführt. Qualitativ zeigte sich während der Entwicklung ein deutlicher Unterschied zwischen Cloud- und lokalem Betrieb. Probleme bei der Cloud-Anbindung waren vor allem organisatorischer Natur, etwa abgekündigte Modellnamen und fehlendes Kontingent. Beim lokalen Modell betrafen sie dagegen Antwortzeit und Formattreue (Tabelle~\ref{tab:probleme}). Die lokale Variante ist aus Sicht des Datenschutzes attraktiv, setzt für einen praxistauglichen Einsatz aber geeignete Hardware voraus.
+
+\section{Limitationen}
+
+Die Ergebnisse der Befragung unterliegen mehreren Einschränkungen:
+
+\begin{itemize}
+  \item \textbf{Stichprobe.} Elf Personen aus dem persönlichen Umfeld, überwiegend 18 bis 29 Jahre alt und ohne regelmäßige Medikation, bilden die eigentliche Risikogruppe der Polypharmazie nicht ab. Die geringe Fallzahl erlaubt nur den Nachweis großer Effekte.
+  \item \textbf{Untersuchungsgegenstand.} Bewertet wurden ein einziges Arzneimittelpaar und eine einzelne Modellantwort. Antworten von Sprachmodellen variieren zwischen Aufrufen, Modellen und Anbietern.
+  \item \textbf{Reihenfolge.} Die Reihenfolge war mit 8:3 nicht ausbalanciert, sodass sich Reihenfolge- und Varianteneffekt nicht sauber trennen lassen.
+  \item \textbf{Sprachfassungen.} Die deutsche Fassung von A ist eine maschinelle Übersetzung. Die beiden Fassungen von B unterscheiden sich in der Modalität: Nach der englischen Fassung erhöht die Kombination das Risiko (\enquote{significantly increases}), nach der deutschen \enquote{kann} sie es erheblich erhöhen. Welche Fassung die einzelnen Personen lasen, wurde nicht dokumentiert.
+  \item \textbf{Datenqualität.} Bei K3 widerspricht ein Satz des Transkripts der Präferenz im Fragebogen. Ausgewertet wurde der Fragebogen, da der übrige Verlauf des Interviews ihn stützt. Bei K11 wurden vertauschte Bezeichnungen korrigiert, bei K8 eine missverstandene Frage ausgeschlossen. Die mündlichen Interviews wurden automatisch transkribiert und enthalten Erkennungsfehler.
+  \item \textbf{Versuchsleitereffekt.} Entwicklung und Befragung lagen in derselben Hand, und die Teilnehmenden stammen aus dem persönlichen Umfeld. Sozial erwünschtes Antwortverhalten zugunsten von Variante~B ist daher nicht auszuschließen.
+  \item \textbf{Umfang.} Bewertet wurde nur der Erklärungstext, nicht die Oberfläche mit Ampel und Detailansicht. Die Korrektheit der Risikoeinstufung wurde nicht gegen einen klinischen Referenzstandard wie Lexicomp geprüft.
+\end{itemize}

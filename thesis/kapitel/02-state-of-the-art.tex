@@ -1,0 +1,74 @@
+\chapter{State of the Art}
+\label{ch:sota}
+
+\section{Interaktionsdatenbanken und klinische Entscheidungsunterstützung}
+
+Die Prüfung auf Arzneimittelwechselwirkungen stützt sich in der Praxis auf kuratierte Datenbanken. Für Fachpersonal haben sich kommerzielle Systeme wie Lexicomp und UpToDate etabliert, die Wechselwirkungen nach Schweregrad klassifizieren und mit Angaben zu Mechanismus und Management versehen~\cite{UpToDate}. Daneben existieren frei zugängliche Angebote, die sich an Fachpersonal und Laien richten. Tabelle~\ref{tab:werkzeuge} ordnet die in dieser Arbeit betrachteten Werkzeuge ein.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Auswahl bestehender Werkzeuge und Informationsquellen zu Arzneimittelwechselwirkungen.}
+  \label{tab:werkzeuge}
+  \begin{tabularx}{\textwidth}{@{}l L L@{}}
+    \toprule
+    Werkzeug & Art & Primäre Zielgruppe \\
+    \midrule
+    UpToDate / Lexicomp~\cite{UpToDate} & Kommerzielles CDSS, Point-of-Care & Ärztliches und pharmazeutisches Fachpersonal \\
+    Medscape~\cite{Medscape} & Medizinisches Fachportal mit Interaktionschecker & Fachpersonal \\
+    DrugBank~\cite{DrugBank} & Pharmakologische Wissensdatenbank & Forschung, Industrie, Fachpersonal \\
+    Drugs.com~\cite{DrugsCom2025} & Frei zugänglicher Interaktionschecker & Laien und Fachpersonal \\
+    WebMD~\cite{WebMD} & Gesundheitsportal & Laien \\
+    Patient.info~\cite{PatientInfo} & Gesundheitsportal & Laien \\
+    Apotheken Umschau~\cite{ApothekenUmschau} & Deutschsprachiger Wechselwirkungs-Check & Laien \\
+    Drug Interaction Tool~\cite{DrugInteractionTool} & Webbasierter Interaktionschecker & Laien \\
+    Gemini~\cite{GoogleGemini} & Allgemeiner KI-Assistent & Allgemeine Öffentlichkeit \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Ein grundlegendes Problem ist die mangelnde Übereinstimmung zwischen den Quellen. Nabeel und Birand untersuchten potenzielle Wechselwirkungen in öffentlichen Apotheken in Nordzypern mit drei verschiedenen Datenbanken und verglichen deren Ergebnisse~\cite{article}. Roca und Roca bewerteten frei verfügbare elektronische Interaktionschecker anhand multimorbider Patientinnen und Patienten~\cite{Roca2022}. Beide Arbeiten verdeutlichen, dass Anzahl und Einstufung erkannter Wechselwirkungen von der gewählten Quelle abhängen. Für die Nutzerinnen und Nutzer bedeutet das, dass das Ergebnis einer einzelnen Prüfung nicht als absolute Wahrheit verstanden werden sollte.
+
+In klinischen Informationssystemen tritt ein weiteres Problem auf. Interaktionswarnungen werden sehr häufig übersteuert, weil viele Meldungen als klinisch nicht relevant wahrgenommen werden. Eine Scoping-Review von Villa Zapata et al.\ fasst die Literatur zu diesem Phänomen zusammen~\cite{VillaZapata}, das unter dem Begriff \emph{Alert Fatigue} bekannt ist. Van De Sijpe et al.\ evaluierten die Gesamtleistung eines DDI-CDSS quantitativ und ergänzten dies um eine Befragung der Anwenderinnen und Anwender~\cite{VanDeSijpe}. Für diese Arbeit ist daraus abzuleiten, dass ein Werkzeug nicht nur korrekt, sondern auch spezifisch sein muss: Zu viele oder zu drastische Warnungen untergraben die Akzeptanz.
+
+\section{Offene Datenquellen}
+
+Zwei frei zugängliche Datenquellen der US-Bundesbehörden bilden die Datengrundlage des in dieser Arbeit entwickelten Prototyps. Die \emph{openFDA}-Initiative der U.S.\ Food and Drug Administration stellt seit 2014 öffentliche Datensätze der Behörde über REST-Schnittstellen bereit, darunter die Fachinformationen aller in den USA zugelassenen Arzneimittel im Format \emph{Structured Product Labeling} (SPL)~\cite{openFDA}. Abschnitt~7 dieser Fachinformationen beschreibt die Wechselwirkungen. \emph{RxNav} ist das Werkzeugangebot der National Library of Medicine rund um das Vokabular RxNorm, das klinische Arzneimittelbezeichnungen normalisiert und jedem Konzept einen eindeutigen Bezeichner (RxCUI) zuordnet~\cite{RxNav}. RxNav bietet unter anderem eine unscharfe Suche, die auch fehlerhaft geschriebene Eingaben einem Wirkstoff zuordnet. Beide Quellen sind ohne Lizenzkosten nutzbar, liefern aber keine laienverständlichen Erklärungen.
+
+\section{Maschinelles Lernen zur Vorhersage von Wechselwirkungen}
+
+Vor dem Aufkommen großer Sprachmodelle wurde maschinelles Lernen vor allem zur \emph{Vorhersage} unbekannter Wechselwirkungen eingesetzt. Chen et al.\ geben einen systematischen Überblick über KI-Verfahren zur Vorhersage von Arzneimittel-Arzneimittel-, Arzneimittel-Nahrungsmittel- und Arzneimittel-Mikrobiom-Interaktionen~\cite{10.1093/bib/bbac427}. Unter den Modellen für Arzneimittelwechselwirkungen heben die Autorinnen und Autoren Ansätze hervor, die auf dem Metabolismus über Cytochrom-P450-Enzyme, auf der Ähnlichkeit von Wirkstoffen oder auf deren Zielstrukturen beruhen. Diese Verfahren zielen auf Arzneimittelentwicklung und Sicherheitsüberwachung, nicht auf die Kommunikation bekannter Risiken an Patientinnen und Patienten. Sie sind daher für die vorliegende Fragestellung nur mittelbar relevant.
+
+\section{Large Language Models zur Erkennung von Wechselwirkungen}
+
+Mit der Verbreitung von LLMs rückte die Frage in den Vordergrund, ob allgemeine Sprachmodelle bekannte Wechselwirkungen zuverlässig erkennen. Bischof et al.\ verglichen ChatGPT mit etablierten CDSS bei der Analyse von Arzneimittelwechselwirkungen~\cite{Bischof2025}. Sicard et al.\ untersuchten, ob LLMs Wechselwirkungen erkennen, die zu unerwünschten Arzneimittelwirkungen geführt hatten~\cite{Sicard2025}. Blotske et al.\ sowie Tilley et al.\ evaluierten LLMs für die Identifikation von Wechselwirkungen und betonen dabei die Bedeutung des Umgangs mit Unsicherheit in den Modellantworten~\cite{Blotske2025, Tilley2026}.
+
+Besonders aufschlussreich ist die Querschnittsstudie von Mohammed et al.~\cite{MOHAMMED2026100733}. Die Autorinnen und Autoren prüften 186 Kombinationen von Antiepileptika mit weiteren Arzneimitteln, von denen 126 nach Lexicomp als schwer oder mittelschwer eingestuft sind. Lexicomp diente als Referenzstandard, verglichen wurden ChatGPT-4, DeepSeek-V3 und Drugs.com. Tabelle~\ref{tab:mohammed} fasst die Ergebnisse zusammen.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Erkennung klinisch relevanter Wechselwirkungen im Vergleich zu Lexicomp nach Mohammed et al.~\cite{MOHAMMED2026100733}.}
+  \label{tab:mohammed}
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    System & Sensitivität & Spezifität & Spezifität nach iterativem Prompting \\
+    \midrule
+    Drugs.com   & 0{,}870 & 0{,}629 & -- \\
+    ChatGPT-4   & 0{,}842 & 0{,}358 & 0{,}77 \\
+    DeepSeek-V3 & 0{,}877 & 0{,}200 & 0{,}42 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Beide Sprachmodelle erkannten nahezu so viele relevante Wechselwirkungen wie Drugs.com, stuften aber deutlich häufiger harmlose oder geringfügige Kombinationen als klinisch relevant ein. Die Autorinnen und Autoren weisen darauf hin, dass diese Überschätzung zu Alert Fatigue sowie zu unnötiger Überwachung oder Therapieänderung führen kann. Ein strukturiertes, an Evidenz gebundenes Nachfragen (\emph{iterative prompting}) verbesserte die Spezifität bei den falsch-positiven Fällen erheblich. Drugs.com zeigte insgesamt die ausgewogenste Leistung (Genauigkeit 0{,}709). Die Studie schließt, dass LLMs derzeit als ergänzende Erklärwerkzeuge dienen können, strukturierte Interaktionsdatenbanken für das eigentliche Screening aber verlässlicher bleiben.
+
+Diese Einschätzung deckt sich mit übergreifenden Arbeiten. Alsayed analysiert Zuverlässigkeit und Risiken KI-gestützter Systeme für Medikationsentscheidungen und die Folgen fehlerhafter Ausgaben~\cite{alsayed2026aigetswrongreliability}. Die Scoping-Review von Ong et al.\ gibt einen Überblick über den Einsatz generativer KI und großer Sprachmodelle zur Vermeidung medikationsbezogener Schäden~\cite{Ong2025}.
+
+\section{Sprachmodelle als Erklärwerkzeug für Patientinnen und Patienten}
+
+Neben der Erkennung von Wechselwirkungen wird untersucht, ob generative KI Arzneimittelinformationen für Patientinnen und Patienten verständlicher machen kann. Almeida et al.\ berichten erste Ergebnisse zu personalisierten, mit generativer KI erstellten Packungsbeilagen~\cite{Almeida2025}. Ansätze dieser Art nutzen die sprachlichen Stärken der Modelle, ohne ihnen die Rolle einer medizinischen Wissensquelle zuzuweisen.
+
+\section{Forschungslücke}
+
+Aus dem Forschungsstand ergeben sich drei Beobachtungen. Erstens erkennen LLMs Wechselwirkungen aus ihrem Trainingswissen mit unzureichender Spezifität~\cite{MOHAMMED2026100733}. Zweitens sind verlässliche Datenquellen vorhanden, aber nicht laienverständlich aufbereitet~\cite{openFDA}. Drittens liegt der Schwerpunkt bisheriger Evaluationen auf diagnostischen Kennzahlen gegenüber einem Referenzstandard; wie Laien die Erklärungen wahrnehmen, ist deutlich seltener untersucht. Diese Arbeit setzt an diesen Punkten an. Sie bindet das Sprachmodell konsequent an den amtlichen Text (\emph{Grounding}), anstatt es frei antworten zu lassen, und evaluiert das Ergebnis aus der Perspektive medizinischer Laien.
