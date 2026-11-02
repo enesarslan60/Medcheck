@@ -1,6 +1,8 @@
 \chapter{Implementierung}
 \label{ch:implementierung}
 
+Dieses Kapitel beschreibt die Umsetzung des Prototyps. Der vollständige Quellcode von Backend und Frontend einschließlich der Tests ist öffentlich auf GitHub verfügbar~\cite{MedcheckRepo}; die im Folgenden genannten Klassen und Konfigurationswerte lassen sich dort nachvollziehen.
+
 \section{Systemarchitektur}
 
 Medcheck folgt einer dreischichtigen Client-Server-Architektur (Abbildung~\ref{fig:architektur}). Eine Single-Page-Application auf Basis von Angular~17 kommuniziert über eine REST-Schnittstelle mit einem Backend auf Basis von Spring Boot (Java~21). Nur das Backend spricht mit externen Diensten. Dadurch bleiben API-Schlüssel außerhalb des Browsers, Ergebnisse können serverseitig zwischengespeichert werden, und Fehlerbehandlung sowie Protokollierung erfolgen an einer zentralen Stelle. Als Zwischenspeicher dient eine In-Memory-Datenbank H2.
